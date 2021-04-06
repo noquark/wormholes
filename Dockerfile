@@ -4,10 +4,8 @@ ENV GOOS=linux
 ENV GOARCH=amd64
 
 WORKDIR /go/src/wh
-
 COPY go.* ./
 RUN go mod download
-
 COPY . /go/src/wh
 RUN go build -a -installsuffix cgo -o wh ./cmd/wh
 
