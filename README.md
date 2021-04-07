@@ -7,6 +7,10 @@
 </p>
 <br />
 
+## Why
+
+The goal of **wormholes** is to become a reliable community driven link shortner.
+
 ## Features
  
 - **Reliable** - Creating shortlinks is fast, fail safe and collisions free.
@@ -21,3 +25,21 @@
 - **GET** `/api/v1/links/<id>` - to get link data
 - **DELETE** `/api/v1/links/<id>` - to delete link
 
+## Contributing
+
+Pull request are more than welcome for anything on roadmap.
+
+## Roadmap
+
+- [ ] Proper documentation
+- [ ] Add more databases (SQLite, MongoDB, MySQL)
+- [ ] Root redirects
+- [ ] Bulk link generation
+- [ ] QR code generation
+- [ ] Unique click count based on cookies
+
+## Non-goals
+
+- Basic/Bearer Auth
+- Detailed Analytics
+- Web Interface
