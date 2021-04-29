@@ -7,8 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/fiber/v2/utils"
-	"github.com/mohitsinghs/wormholes/internal/factory"
-	"github.com/mohitsinghs/wormholes/internal/links"
+	"github.com/mohitsinghs/wormholes/factory"
+	"github.com/mohitsinghs/wormholes/links"
 )
 
 func Setup(linkStore links.Store, factory *factory.Factory) *fiber.App {

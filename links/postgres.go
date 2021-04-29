@@ -81,7 +81,7 @@ func (s *PgStore) Ids() ([]string, error) {
 	)
 	if err != nil {
 		log.Printf("Error during ids query : %v", err)
-		return nil, errors.New("Error getting ids")
+		return nil, errors.New("error getting ids")
 	}
 	defer rows.Close()
 	ids := []string{}

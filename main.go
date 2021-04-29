@@ -8,10 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	. "github.com/mohitsinghs/wormholes/internal/app"
-	"github.com/mohitsinghs/wormholes/internal/config"
-	"github.com/mohitsinghs/wormholes/internal/factory"
-	"github.com/mohitsinghs/wormholes/internal/links"
+	. "github.com/mohitsinghs/wormholes/app"
+	"github.com/mohitsinghs/wormholes/config"
+	"github.com/mohitsinghs/wormholes/factory"
+	"github.com/mohitsinghs/wormholes/links"
 )
 
 var port int

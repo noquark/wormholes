@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/mohitsinghs/wormholes/internal/database"
-	"github.com/mohitsinghs/wormholes/internal/database/postgres"
-	"github.com/mohitsinghs/wormholes/internal/database/redis"
+	"github.com/mohitsinghs/wormholes/database"
+	"github.com/mohitsinghs/wormholes/database/postgres"
+	"github.com/mohitsinghs/wormholes/database/redis"
 	"gopkg.in/yaml.v3"
 )
 

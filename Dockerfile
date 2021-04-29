@@ -3,14 +3,13 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
 
-WORKDIR /go/src/wh
-COPY go.* ./
+WORKDIR /go/src/wormholes
+COPY go.* .
 RUN go mod download
-COPY . /go/src/wh
-RUN go build -a -installsuffix cgo -o wh ./cmd/wh
+COPY . .
+RUN go build -a -installsuffix cgo .
 
 FROM alpine:latest as runner
-WORKDIR /wh
-COPY --from=compiler /go/src/wh/wh .
+COPY --from=compiler /go/src/wormholes/wormholes /
 EXPOSE 3000
-CMD ["./wh"]
+CMD ["/wormholes"]

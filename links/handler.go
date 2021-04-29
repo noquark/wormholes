@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/mohitsinghs/wormholes/internal/factory"
+	"github.com/mohitsinghs/wormholes/factory"
 )
 
 // Fiber route handlers for link

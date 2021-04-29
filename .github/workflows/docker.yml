@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'cmd/**'
-      - 'internal/**'
+      - '**/*.go'
       - 'go.*'
       - 'Dockerfile'
 

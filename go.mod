@@ -4,9 +4,9 @@ go 1.16
 
 require (
 	github.com/d4l3k/messagediff v1.2.1 // indirect
-	github.com/go-redis/redis/v8 v8.8.0
-	github.com/gofiber/fiber/v2 v2.7.1
-	github.com/gookit/color v1.3.8
+	github.com/go-redis/redis/v8 v8.8.2
+	github.com/gofiber/fiber/v2 v2.8.0
+	github.com/gookit/color v1.4.2
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/mitchellh/go-homedir v1.1.0
