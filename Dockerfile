@@ -10,6 +10,7 @@ COPY . .
 RUN go build -a -installsuffix cgo .
 
 FROM alpine:latest as runner
+RUN apk --no-cache add ca-certificates
 COPY --from=compiler /go/src/wormholes/wormholes /
 EXPOSE 3000
 CMD ["/wormholes"]
