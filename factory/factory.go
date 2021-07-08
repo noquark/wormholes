@@ -7,9 +7,9 @@ import (
 	"path"
 	"sync"
 
-	"github.com/matoous/go-nanoid/v2"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/tylertreat/BoomFilters"
+	boom "github.com/tylertreat/BoomFilters"
 )
 
 const (
@@ -41,7 +41,7 @@ func (f *Factory) newWithSize(size int) (string, error) {
 		id = f.failSafeGenId(size)
 	}
 	if id == "" {
-		return "", errors.New("Unable to generate valid id in max iterations")
+		return "", errors.New("unable to generate valid id in max iterations")
 	}
 	return id, nil
 }

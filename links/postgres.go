@@ -10,21 +10,32 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-// postgres implementaion of link db store
+// postgres implementation of link db store
 
 type PgStore struct {
 	db *pgxpool.Pool
+
+	sqlInsert string
+	sqlUpdate string
+	sqlGet    string
+	sqlDelete string
+	sqlIds    string
 }
 
 func NewPgStore(pool *pgxpool.Pool) *PgStore {
 	return &PgStore{
-		db: pool,
+		db:        pool,
+		sqlInsert: `INSERT INTO wh_links (id, target, tag, created_at, updated_at) VALUES ($1, $2, $3, $4, $5);`,
+		sqlUpdate: `UPDATE wh_links SET target=$1, tag=$2, updated_at=$3 where id=$4`,
+		sqlGet:    `SELECT id, target, tag FROM wh_links where id=$1`,
+		sqlDelete: `DELETE FROM wh_links WHERE id=$1`,
+		sqlIds:    `SELECT id from links`,
 	}
 }
 
 func (p *PgStore) Insert(link *Link) error {
 	_, err := p.db.Exec(context.Background(),
-		`INSERT INTO links.links (id, target, tag, created_at, updated_at) VALUES ($1, $2, $3, $4, $5);`,
+		p.sqlInsert,
 		link.Id, link.Target, link.Tag, time.Now(), time.Now(),
 	)
 	if err != nil {
@@ -35,7 +46,7 @@ func (p *PgStore) Insert(link *Link) error {
 
 func (p *PgStore) Update(link *Link) error {
 	_, err := p.db.Exec(context.Background(),
-		`UPDATE links.links SET target=$1, tag=$2, updated_at=$3 where id=$4`,
+		p.sqlUpdate,
 		link.Target, link.Tag, time.Now(), link.Id,
 	)
 	if err != nil {
@@ -47,7 +58,7 @@ func (p *PgStore) Update(link *Link) error {
 func (p *PgStore) Get(id string) (*Link, error) {
 	var link Link
 	rows := p.db.QueryRow(context.Background(),
-		`SELECT id, target, tag FROM links.links where id=$1`,
+		p.sqlGet,
 		id,
 	)
 	err := rows.Scan(&link.Id, &link.Target, &link.Tag)
@@ -65,7 +76,7 @@ func (p *PgStore) Get(id string) (*Link, error) {
 
 func (p *PgStore) Delete(id string) error {
 	_, err := p.db.Exec(context.Background(),
-		`DELETE FROM links.links WHERE id=$1;`,
+		p.sqlDelete,
 		id,
 	)
 	if err != nil {
@@ -75,9 +86,9 @@ func (p *PgStore) Delete(id string) error {
 	return nil
 }
 
-func (s *PgStore) Ids() ([]string, error) {
-	rows, err := s.db.Query(context.Background(),
-		`SELECT id from links.links;`,
+func (p *PgStore) Ids() ([]string, error) {
+	rows, err := p.db.Query(context.Background(),
+		p.sqlIds,
 	)
 	if err != nil {
 		log.Printf("Error during ids query : %v", err)

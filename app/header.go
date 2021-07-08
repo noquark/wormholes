@@ -17,7 +17,7 @@ func ShowHeader(port int) {
 	lb := color.New(color.Gray).Render
 	o := b("o")
 
-	var headerTmpl = fmt.Sprintf(`
+	var headerTemplate = fmt.Sprintf(`
           %s
           |
  %s   %s    %s
@@ -26,14 +26,10 @@ func ShowHeader(port int) {
 
 `, o, o, o, o, o, o, o, o)
 
-	headerTmpl += fmt.Sprintf(" Running on port %s \n\n", lb("{{ .Port }}"))
-	headerTmpl += fmt.Sprintf(" %s     %s       - to create links\n", b("PUT"), lb("/api/v1/links"))
-	headerTmpl += fmt.Sprintf(" %s    %s  - to update link\n", b("POST"), lb("/api/v1/links/<id>"))
-	headerTmpl += fmt.Sprintf(" %s     %s  - to get link data\n", b("GET"), lb("/api/v1/links/<id>"))
-	headerTmpl += fmt.Sprintf(" %s  %s  - to delete link\n", b("DELETE"), lb("/api/v1/links/<id>"))
+	headerTemplate += fmt.Sprintf(" Running on port %s \n\n", lb("{{ .Port }}"))
 
 	buf := new(bytes.Buffer)
-	t := template.Must(template.New("header").Parse(headerTmpl))
+	t := template.Must(template.New("header").Parse(headerTemplate))
 	t.Execute(buf, &headerOpts{
 		Port: port,
 	})

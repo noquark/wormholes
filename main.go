@@ -8,7 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	. "github.com/mohitsinghs/wormholes/app"
+	"github.com/mohitsinghs/wormholes/app"
+	"github.com/mohitsinghs/wormholes/auth"
 	"github.com/mohitsinghs/wormholes/config"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
@@ -31,6 +32,8 @@ func main() {
 	pgconn := conf.Postgres.Connect()
 	rdbconn := conf.Redis.Connect()
 
+	authStore := auth.NewStore(pgconn)
+
 	var linkStore links.Store
 
 	switch ldb {
@@ -45,17 +48,17 @@ func main() {
 	f := factory.New()
 	f.TryRestore(linkStore.Ids)
 
-	app := Setup(linkStore, f)
+	instance := app.Setup(linkStore, authStore, f)
 
 	go func() {
-		ShowHeader(port)
-		app.Listen(fmt.Sprintf(":%d", port))
+		app.ShowHeader(port)
+		instance.Listen(fmt.Sprintf(":%d", port))
 	}()
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
-	_ = <-ch
-	if err := app.Shutdown(); err != nil {
+	<-ch
+	if err := instance.Shutdown(); err != nil {
 		log.Printf("Error stopping server : %v", err.Error())
 	}
 

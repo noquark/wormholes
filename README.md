@@ -3,23 +3,19 @@
   <img alt="docker status" src="https://github.com/mohitsinghs/wormholes/actions/workflows/docker.yml/badge.svg">
 </p>
 <p align="center">
-  <b>A self-hosted link shortner</b><br/>
+  <b>A self-hosted link shortener</b><br/>
+  <sub>powered by fiber and postgres/redis</sub>
 </p>
 <br />
 
 ### Features
 
-- **Reliable** - Creating shortlinks is fast, fail safe and collisions free.
-- **Configurable** - Configurable via yaml, cli flags and environment variables.
-- **Ready to use** - Just pull the docker image and run with desired database and config.
+- Fast, fail safe and collisions free link creation.
+- Configurable via yaml, cli flags and environment variables.
+- Easy to use docker image
 
-### APIs
+### Roadmap
 
-- **PUT** `/api/v1/links` - to create links
-- **POST** `/api/v1/links/<id>` - to update link
-- **GET** `/api/v1/links/<id>` - to get link data
-- **DELETE** `/api/v1/links/<id>` - to delete link
-
-### Contributing
-
-Pull request are welcome
+- [x] Basic Auth APIs
+- [ ] Analytics dashboard
+- [ ] GeoLite2 integration
