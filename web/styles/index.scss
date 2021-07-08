@@ -1,0 +1,36 @@
+@import '../node_modules/bootstrap/scss/bootstrap';
+
+main {
+  display: flex;
+  flex-shrink: 0;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 8rem);
+}
+
+.form-control:focus {
+  box-shadow: none;
+}
+
+.sign-in {
+  width: 100%;
+  max-width: 20rem;
+
+  h1 {
+    font-weight: bold;
+    margin-bottom: 4rem;
+  }
+
+  input[type='email'] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  input[type='password'] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
