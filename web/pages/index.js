@@ -1,33 +1,27 @@
 import Layout from '@/components/Layout'
+import useUser, { Status } from '@/hooks/useUser'
+import { useRouter } from 'next/router'
 
 export default function IndexPage() {
+  const [user, status] = useUser()
+  const router = useRouter()
+
+  if (status === Status.SUCCESS) {
+    return (
+      <Layout>
+        <h1>Welcome to Wormholes !</h1>
+        <p>
+          Your email is <strong>{user.email}</strong>
+        </p>
+      </Layout>
+    )
+  }
+  if (status === Status.ERROR) {
+    router.push('/login')
+  }
   return (
     <Layout>
-      <form className='sign-in text-center'>
-        <h1 className='h1 fw-bold'>Wormholes</h1>
-        <div className='form-floating'>
-          <input
-            type='email'
-            className='form-control'
-            id='floatingInput'
-            placeholder='name@example.com'
-          />
-          <label htmlFor='floatingInput'>Email address</label>
-        </div>
-        <div className='form-floating'>
-          <input
-            type='password'
-            className='form-control'
-            id='floatingPassword'
-            placeholder='Password'
-          />
-          <label htmlFor='floatingPassword'>Password</label>
-        </div>
-
-        <button className='mt-2 w-100 btn btn-lg btn-primary' type='submit'>
-          Get Started
-        </button>
-      </form>
+      <h1>Loading...</h1>
     </Layout>
   )
 }
