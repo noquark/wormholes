@@ -4,7 +4,7 @@ export default function Layout({
   children,
   title = 'Wormholes : A self-hosted link shortener',
   description = 'Wormholes is a fast and fail-safe link shortener',
-  url = '',
+  full = false,
 }) {
   return (
     <>
@@ -12,10 +12,12 @@ export default function Layout({
         <title>{title}</title>
         <meta name='description' content={description} />
       </Head>
-      <main className='bg-light'>{children}</main>
-      <footer className='footer mt-auto py-3 text-center bg-light'>
-        <p className='mt-5 mb-3 text-muted small'>&copy; 2021 Mohit Singh.</p>
-      </footer>
+      <main className={full && 'full'}>{children}</main>
+      {!full && (
+        <footer>
+          <p>&copy; 2021 Mohit Singh.</p>
+        </footer>
+      )}
     </>
   )
 }

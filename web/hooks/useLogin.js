@@ -82,24 +82,10 @@ export default function useLogin() {
     }
   }
 
-  function classFor(type) {
-    switch (type) {
-      case 'email':
-        return state.email && (state.emailError ? 'is-invalid' : 'is-valid')
-      case 'password':
-        return (
-          state.password && (state.passwordError ? 'is-invalid' : 'is-valid')
-        )
-      default:
-        return ''
-    }
-  }
-
   return {
     state,
     handleEmail,
     handlePassword,
     handleSubmit,
-    classFor,
   }
 }

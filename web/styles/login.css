@@ -1,0 +1,46 @@
+form.sign-in {
+  @apply w-full max-w-xs;
+  & h1 {
+    @apply font-bold mb-8 w-full text-center text-3xl text-gray-700;
+  }
+  & .form {
+    @apply relative;
+  }
+  & input {
+    @apply w-full shadow-sm h-16 px-3 py-4 placeholder-transparent rounded-md border border-transparent caret-gray-500 text-gray-700;
+    &:focus {
+      @apply outline-none;
+      &.is-invalid {
+        @apply border-red-400;
+      }
+      &.is-valid {
+        @apply border-green-400;
+      }
+    }
+    &[type='email'] {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    &[type='password'] {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+    &:focus,
+    &:not(:placeholder-shown) {
+      @apply pt-7;
+    }
+  }
+  & label {
+    @apply select-none absolute top-0 left-0 px-3 py-4 text-gray-500 transition-all duration-150 ease-in-out;
+  }
+  & .invalid-tooltip {
+    @apply absolute bg-red-500 opacity-80 px-2 py-1 z-10 text-xs rounded-sm text-white;
+  }
+  & input:focus ~ label,
+  & input:not(:placeholder-shown) ~ label {
+    @apply scale-90 -translate-y-3 -translate-x-1;
+  }
+  & button[type='submit'] {
+    @apply mt-8 w-full px-2 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md;
+  }
+}

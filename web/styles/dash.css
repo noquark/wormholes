@@ -1,0 +1,16 @@
+.sidebar {
+  @apply flex flex-col flex-shrink-0 border-r border-gray-200 w-12;
+  & ul + ul {
+    @apply mt-auto;
+  }
+
+  & ul li {
+    @apply px-2 py-4 text-gray-600;
+    & a {
+      @apply cursor-pointer select-none hover:text-gray-700;
+      &.active {
+        @apply text-blue-500;
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import Layout from '@/components/Layout'
+import Sidebar from '@/components/Sidebar'
 import useUser, { Status } from '@/hooks/useUser'
 import { useRouter } from 'next/router'
 
@@ -8,11 +9,8 @@ export default function IndexPage() {
 
   if (status === Status.SUCCESS) {
     return (
-      <Layout>
-        <h1>Welcome to Wormholes !</h1>
-        <p>
-          Your email is <strong>{user.email}</strong>
-        </p>
+      <Layout full>
+        <Sidebar />
       </Layout>
     )
   }

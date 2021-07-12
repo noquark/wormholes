@@ -1,0 +1,17 @@
+main {
+  @apply flex flex-shrink-0 w-full bg-gray-50;
+  &.full {
+    @apply h-screen flex-nowrap;
+  }
+  &:not(.full) {
+    height: calc(100vh - 5rem);
+    @apply flex-col justify-center items-center;
+  }
+}
+
+footer {
+  @apply py-3 mt-auto text-center bg-gray-50;
+  & p {
+    @apply text-xs mt-5 mb-3 text-gray-600;
+  }
+}
