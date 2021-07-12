@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import Head from 'next/head'
 
 export default function Layout({
@@ -12,7 +13,7 @@ export default function Layout({
         <title>{title}</title>
         <meta name='description' content={description} />
       </Head>
-      <main className={full && 'full'}>{children}</main>
+      <main className={clsx([full && 'full'])}>{children}</main>
       {!full && (
         <footer>
           <p>&copy; 2021 Mohit Singh.</p>
