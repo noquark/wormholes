@@ -1,3 +1,4 @@
+import Home from '@/components/dashboard/Home'
 import Layout from '@/components/Layout'
 import Sidebar from '@/components/Sidebar'
 import useUser, { Status } from '@/hooks/useUser'
@@ -11,6 +12,7 @@ export default function IndexPage() {
     return (
       <Layout full>
         <Sidebar />
+        <Home />
       </Layout>
     )
   }

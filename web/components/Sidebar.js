@@ -26,7 +26,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div className='sidebar'>
+    <aside className='sidebar'>
       <ul>
         <SideLink title='Home' icon={Home} />
         <SideLink href='#' title='Dashboard' icon={PieChart} />
@@ -41,6 +41,6 @@ export default function Sidebar() {
           icon={LogOut}
         />
       </ul>
-    </div>
+    </aside>
   )
 }
