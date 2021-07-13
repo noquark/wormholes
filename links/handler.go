@@ -39,6 +39,10 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	var link *Link
 	if req.Custom != "" {
+		if h.factory.Exists(req.Custom) {
+			log.Println("Link already exists")
+			return fiber.ErrBadRequest
+		}
 		link = New(req.Custom, req.Target, req.Tag)
 		h.factory.Add(req.Custom)
 	} else {

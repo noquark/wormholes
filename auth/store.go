@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"time"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -24,7 +23,7 @@ type Store struct {
 func NewStore(pool *pgxpool.Pool) Store {
 	return Store{
 		db:          pool,
-		sqlInsert:   `INSERT INTO wh_users (email, hashed_password, created_at, updated_at) VALUES ($1, $2, $3, $4);`,
+		sqlInsert:   `INSERT INTO wh_users (email, hashed_password) VALUES ($1, $2);`,
 		sqlGet:      `SELECT id, email FROM wh_users where email=$1`,
 		sqlDelete:   `DELETE FROM wh_users WHERE email=$1;`,
 		sqlValidate: `SELECT hashed_password FROM wh_users WHERE email=$1`,
@@ -33,7 +32,7 @@ func NewStore(pool *pgxpool.Pool) Store {
 
 func (p *Store) Insert(user *User, hash string) error {
 	_, err := p.db.Exec(context.Background(),
-		p.sqlInsert, user.Email, hash, time.Now(), time.Now(),
+		p.sqlInsert, user.Email, hash,
 	)
 	if err != nil {
 		log.Printf("Error creating user : %v", err)

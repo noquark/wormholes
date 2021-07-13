@@ -16,11 +16,10 @@ import (
 )
 
 var port int
-var cfgFile, ldb string
+var cfgFile string
 
 func main() {
 	flag.IntVar(&port, "port", 3000, "Port to run")
-	flag.StringVar(&ldb, "backend", "postgres", "Backend to store links")
 	flag.StringVar(&cfgFile, "config", "", "Path to non-default config")
 	conf, err := config.LoadDefault()
 	if err != nil {
@@ -30,22 +29,11 @@ func main() {
 	flag.Parse()
 
 	pgconn := conf.Postgres.Connect()
-	rdbconn := conf.Redis.Connect()
 
 	authStore := auth.NewStore(pgconn)
+	linkStore := links.NewStore(pgconn)
 
-	var linkStore links.Store
-
-	switch ldb {
-	case "postgres":
-		linkStore = links.NewPgStore(pgconn)
-	case "redis":
-		linkStore = links.NewRdbStore(rdbconn)
-	default:
-		log.Fatalln("Backend should be one of postgres and redis")
-	}
-
-	f := factory.New()
+	f := factory.New(&conf.Factory)
 	f.TryRestore(linkStore.Ids)
 
 	instance := app.Setup(linkStore, authStore, f)
@@ -60,9 +48,13 @@ func main() {
 	<-ch
 	if err := instance.Shutdown(); err != nil {
 		log.Printf("Error stopping server : %v", err.Error())
+	} else {
+		log.Println("Server Stopped")
 	}
 
 	if err := f.Backup(); err != nil {
 		log.Printf("Error during backup : %v", err.Error())
+	} else {
+		log.Println("Backup Successful")
 	}
 }
