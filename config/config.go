@@ -10,30 +10,28 @@ import (
 	"strings"
 
 	"github.com/mohitsinghs/wormholes/database"
-	"github.com/mohitsinghs/wormholes/database/postgres"
-	"github.com/mohitsinghs/wormholes/database/redis"
+	"github.com/mohitsinghs/wormholes/factory"
 	"gopkg.in/yaml.v3"
 )
 
 const (
 	DEFAULT_PORT = 3000
-	DEFAULT_CONF = "config.yaml"
+	DEFAULT_CONF = "config.yml"
+	DEFAULT_DIR  = "wormholes"
 	DIR_PERM     = 0775
 )
 
 type Config struct {
-	Port    int
-	Backend string
-	postgres.Postgres
-	redis.Redis
+	Port     int
+	Postgres database.Postgres
+	Factory  factory.Conf
 }
 
 func defaultConfig() Config {
 	return Config{
 		Port:     DEFAULT_PORT,
-		Backend:  database.POSTGRES,
-		Postgres: postgres.Default(),
-		Redis:    redis.Default(),
+		Postgres: database.Default(),
+		Factory:  factory.Default(),
 	}
 }
 
@@ -42,7 +40,7 @@ func configDir() string {
 	if err != nil {
 		log.Printf("Error getting home dir : %v", err)
 	}
-	cfgDir := filepath.Join(home, "wh")
+	cfgDir := filepath.Join(home, DEFAULT_DIR)
 	_, err = os.Stat(cfgDir)
 	if os.IsNotExist(err) {
 		if err := os.MkdirAll(cfgDir, DIR_PERM); err != nil {
@@ -70,7 +68,7 @@ func writeDefault(cfgFile string) error {
 }
 
 func LoadDefault() (*Config, error) {
-	cfgFile := filepath.Join(configDir(), "config.yaml")
+	cfgFile := filepath.Join(configDir(), DEFAULT_CONF)
 	return LoadFromFile(cfgFile)
 }
 

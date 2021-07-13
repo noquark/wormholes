@@ -4,7 +4,7 @@
 </p>
 <p align="center">
   <b>A self-hosted link shortener</b><br/>
-  <sub>powered by fiber and postgres/redis</sub>
+  <sub>powered by fiber and postgres</sub>
 </p>
 <br />
 
@@ -13,6 +13,11 @@
 - Fast, fail safe and collisions free link creation.
 - Configurable via yaml, cli flags and environment variables.
 - Easy to use docker image
+
+### Requirements
+
+- Docker
+- TimescaleDB
 
 ### Roadmap
 

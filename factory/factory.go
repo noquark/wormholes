@@ -7,30 +7,26 @@ import (
 	"path"
 	"sync"
 
+	"github.com/bits-and-blooms/bloom/v3"
 	gonanoid "github.com/matoous/go-nanoid/v2"
-	homedir "github.com/mitchellh/go-homedir"
-	boom "github.com/tylertreat/BoomFilters"
-)
-
-const (
-	MAX_TRIES = 10
-	ID_SIZE   = 7
 )
 
 type Factory struct {
-	Generated *boom.ScalableBloomFilter
+	Generated *bloom.BloomFilter
 	mutex     sync.RWMutex
+	conf      *Conf
 }
 
-func New() *Factory {
+func New(config *Conf) *Factory {
 	return &Factory{
-		Generated: boom.NewDefaultScalableBloomFilter(0.001),
+		Generated: bloom.NewWithEstimates(config.MaxLimit, config.ErrorRate),
 		mutex:     sync.RWMutex{},
+		conf:      config,
 	}
 }
 
 func (f *Factory) NewId() (string, error) {
-	return f.newWithSize(ID_SIZE)
+	return f.newWithSize(f.conf.IdSize)
 }
 
 // Generate a new nanoid of given size and fallback to
@@ -43,6 +39,7 @@ func (f *Factory) newWithSize(size int) (string, error) {
 	if id == "" {
 		return "", errors.New("unable to generate valid id in max iterations")
 	}
+	f.Add(id)
 	return id, nil
 }
 
@@ -61,11 +58,8 @@ func (f *Factory) Exists(id string) bool {
 }
 
 // Check if backup of generated bloom filter can be restored from file
-func CanRestore() (bool, error) {
-	bp, err := bloomPath()
-	if err != nil {
-		return false, err
-	}
+func (f *Factory) CanRestore() (bool, error) {
+	bp := f.conf.BackupPath
 	info, err := os.Stat(bp)
 	if err != nil {
 		if os.IsNotExist(err) || info.Size() == 0 {
@@ -76,11 +70,13 @@ func CanRestore() (bool, error) {
 	return info.Mode().IsRegular(), nil
 }
 
-// Backup generated bloom filter to file in $HOME/.wh/gen.db
+// Backup generated bloom filter to file
 func (f *Factory) Backup() error {
-	bp, err := bloomPath()
-	if err != nil {
-		return err
+	bp := f.conf.BackupPath
+	bpDir := path.Dir(bp)
+	_, err := os.Stat(bpDir)
+	if os.IsNotExist(err) {
+		_ = os.MkdirAll(bpDir, 0775)
 	}
 	f.mutex.RLock()
 	defer f.mutex.RUnlock()
@@ -94,7 +90,7 @@ func (f *Factory) Backup() error {
 
 // Try restoring bloom filter either from file or from database
 func (f *Factory) TryRestore(idsFunc func() ([]string, error)) {
-	canRestore, err := CanRestore()
+	canRestore, err := f.CanRestore()
 	if err != nil {
 		log.Printf("Error getting backup : %v", err)
 	}
@@ -111,12 +107,9 @@ func (f *Factory) TryRestore(idsFunc func() ([]string, error)) {
 	}
 }
 
-// Restore generated bloom filter from $HOME/.wh/gen.db
+// Restore generated bloom filter from backup
 func (f *Factory) RestoreFromFile() error {
-	bp, err := bloomPath()
-	if err != nil {
-		log.Panicln(err.Error())
-	}
+	bp := f.conf.BackupPath
 	data, err := os.ReadFile(bp)
 	if err != nil {
 		return err
@@ -145,7 +138,7 @@ func (f *Factory) RestoreFromIds(ids []string) {
 // return empty string on failure
 func (f *Factory) failSafeGenId(size int) string {
 	id := ""
-	for i := 0; i < MAX_TRIES; i++ {
+	for i := 0; i < f.conf.MaxTry; i++ {
 		id, err := gonanoid.New(size)
 		if err != nil || f.Exists(id) {
 			continue
@@ -156,21 +149,4 @@ func (f *Factory) failSafeGenId(size int) string {
 		break
 	}
 	return id
-}
-
-// Get backup path for bloom filter creating directories
-// if they don't exist
-func bloomPath() (string, error) {
-	home, err := homedir.Dir()
-	if err != nil {
-		return "", err
-	}
-	wormDir := path.Join(home, ".wh")
-	_, err = os.Stat(wormDir)
-	if os.IsNotExist(err) {
-		if err := os.MkdirAll(wormDir, 0775); err != nil {
-			return "", err
-		}
-	}
-	return path.Join(wormDir, "gen.db"), nil
 }
