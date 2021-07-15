@@ -13,19 +13,24 @@ import (
 	"github.com/mohitsinghs/wormholes/config"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
+	"github.com/mohitsinghs/wormholes/pipe"
 )
 
 var port int
 var cfgFile string
 
+const (
+	ENV_PREFIX = "WH"
+)
+
 func main() {
 	flag.IntVar(&port, "port", 3000, "Port to run")
 	flag.StringVar(&cfgFile, "config", "", "Path to non-default config")
-	conf, err := config.LoadDefault()
+	conf, err := config.Load(cfgFile)
 	if err != nil {
 		log.Printf("Failed to read config : %v", err)
 	}
-	config.Merge("WH", conf)
+	config.Merge(ENV_PREFIX, conf)
 	flag.Parse()
 
 	pgconn := conf.Postgres.Connect()
@@ -33,10 +38,10 @@ func main() {
 	authStore := auth.NewStore(pgconn)
 	linkStore := links.NewStore(pgconn)
 
-	f := factory.New(&conf.Factory)
-	f.TryRestore(linkStore.Ids)
+	f := factory.New(&conf.Factory).TryRestore(linkStore.Ids)
+	p := pipe.New(conf).Start().Wait()
 
-	instance := app.Setup(linkStore, authStore, f)
+	instance := app.Setup(linkStore, authStore, f, p)
 
 	go func() {
 		app.ShowHeader(port)

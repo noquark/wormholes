@@ -10,11 +10,13 @@ import (
 	"github.com/mohitsinghs/wormholes/auth"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
+	"github.com/mohitsinghs/wormholes/pipe"
 )
 
-func Setup(linkStore links.Store, authStore auth.Store, factory *factory.Factory) *fiber.App {
+func Setup(linkStore links.Store, authStore auth.Store, factory *factory.Factory, pipe *pipe.Pipe) *fiber.App {
 	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
+		DisableStartupMessage:   true,
+		EnableTrustedProxyCheck: true,
 	})
 
 	store := session.New(session.Config{
@@ -25,7 +27,7 @@ func Setup(linkStore links.Store, authStore auth.Store, factory *factory.Factory
 	app.Use(recover.New())
 
 	authHandler := auth.NewHandler(store, authStore)
-	linkHandler := links.NewHandler(store, linkStore, factory)
+	linkHandler := links.NewHandler(store, linkStore, factory, pipe)
 
 	app.Get("/:id", linkHandler.Redirect)
 

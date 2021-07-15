@@ -26,20 +26,25 @@ func New(config *Conf) *Factory {
 }
 
 func (f *Factory) NewId() (string, error) {
-	return f.newWithSize(f.conf.IdSize)
-}
-
-// Generate a new nanoid of given size and fallback to
-// failSafeGenId on error or collsion in simple id generation
-func (f *Factory) newWithSize(size int) (string, error) {
-	id, err := gonanoid.New(size)
+	id, err := gonanoid.New(f.conf.IdSize)
 	if err != nil || f.Exists(id) {
-		id = f.failSafeGenId(size)
+		id = f.failSafeGenId(f.conf.IdSize)
 	}
 	if id == "" {
-		return "", errors.New("unable to generate valid id in max iterations")
+		return "", errors.New("unable to generate valid id")
 	}
 	f.Add(id)
+	return id, nil
+}
+
+func (f *Factory) NewCookie() (string, error) {
+	id, err := gonanoid.New(21)
+	if err != nil || f.Exists(id) {
+		id = f.failSafeGenId(21)
+	}
+	if id == "" {
+		return "", errors.New("unable to generate valid cookie")
+	}
 	return id, nil
 }
 
@@ -89,7 +94,7 @@ func (f *Factory) Backup() error {
 }
 
 // Try restoring bloom filter either from file or from database
-func (f *Factory) TryRestore(idsFunc func() ([]string, error)) {
+func (f *Factory) TryRestore(idsFunc func() ([]string, error)) *Factory {
 	canRestore, err := f.CanRestore()
 	if err != nil {
 		log.Printf("Error getting backup : %v", err)
@@ -105,6 +110,7 @@ func (f *Factory) TryRestore(idsFunc func() ([]string, error)) {
 		}
 		f.RestoreFromIds(ids)
 	}
+	return f
 }
 
 // Restore generated bloom filter from backup

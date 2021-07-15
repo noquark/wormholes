@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS wh_links (
 );
 `
 
+// TODO: Add schema for timeseries events
+
 // Postgres connection
 type Postgres struct {
 	Username string
