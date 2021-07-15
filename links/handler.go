@@ -2,25 +2,33 @@ package links
 
 import (
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/mohitsinghs/wormholes/factory"
+	"github.com/mohitsinghs/wormholes/pipe"
 )
 
 // Fiber route handlers for link
+
+const (
+	HeaderWormholesCookie = "_wh"
+)
 
 type Handler struct {
 	store   *session.Store
 	backend Store
 	factory *factory.Factory
+	pipe    *pipe.Pipe
 }
 
-func NewHandler(store *session.Store, backend Store, factory *factory.Factory) *Handler {
+func NewHandler(store *session.Store, backend Store, factory *factory.Factory, pipe *pipe.Pipe) *Handler {
 	return &Handler{
 		store,
 		backend,
 		factory,
+		pipe,
 	}
 }
 
@@ -105,6 +113,21 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 		log.Printf("Error getting link : %v", err)
 		return fiber.ErrInternalServerError
 	}
+	var cookie string
+	if c.Get(HeaderWormholesCookie) == "" {
+		cookie, _ := h.factory.NewCookie()
+		c.Set(HeaderWormholesCookie, cookie)
+	} else {
+		cookie = c.Get(HeaderWormholesCookie)
+	}
+	h.pipe.Push(pipe.Event{
+		Time:   time.Now(),
+		Link:   link.Id,
+		Tag:    link.Tag,
+		Cookie: cookie,
+		UA:     c.Get(fiber.HeaderUserAgent),
+		IP:     c.IP(),
+	})
 	return c.Redirect(link.Target, fiber.StatusMovedPermanently)
 }
 

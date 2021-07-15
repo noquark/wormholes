@@ -15,14 +15,16 @@ import (
 )
 
 const (
-	DEFAULT_PORT = 3000
-	DEFAULT_CONF = "config.yml"
-	DEFAULT_DIR  = "wormholes"
-	DIR_PERM     = 0775
+	DEFAULT_PORT    = 3000
+	DEFAULT_STREAMS = 8
+	DEFAULT_CONF    = "config.yml"
+	DEFAULT_DIR     = "wormholes"
+	DIR_PERM        = 0775
 )
 
 type Config struct {
 	Port     int
+	Streams  int
 	Postgres database.Postgres
 	Factory  factory.Conf
 }
@@ -30,6 +32,7 @@ type Config struct {
 func defaultConfig() Config {
 	return Config{
 		Port:     DEFAULT_PORT,
+		Streams:  DEFAULT_STREAMS,
 		Postgres: database.Default(),
 		Factory:  factory.Default(),
 	}
@@ -65,6 +68,17 @@ func writeDefault(cfgFile string) error {
 		}
 	}
 	return nil
+}
+
+func Load(cfgFile string) (*Config, error) {
+	var conf *Config
+	var err error
+	if cfgFile != "" {
+		conf, err = LoadFromFile(cfgFile)
+	} else {
+		conf, err = LoadDefault()
+	}
+	return conf, err
 }
 
 func LoadDefault() (*Config, error) {
