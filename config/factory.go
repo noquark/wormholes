@@ -1,4 +1,4 @@
-package factory
+package config
 
 import (
 	"log"
@@ -6,9 +6,10 @@ import (
 	"path"
 
 	"github.com/mitchellh/go-homedir"
+	"github.com/mohitsinghs/wormholes/constants"
 )
 
-type Conf struct {
+type FactoryConfig struct {
 	MaxLimit   uint
 	ErrorRate  float64
 	MaxTry     int
@@ -16,16 +17,16 @@ type Conf struct {
 	BackupPath string
 }
 
-func Default() Conf {
+func DefaultFactory() FactoryConfig {
 	bp, err := bloomPath()
 	if err != nil {
 		log.Panicln(err.Error())
 	}
-	return Conf{
-		MaxLimit:   1e7,
-		ErrorRate:  1e-3,
-		MaxTry:     10,
-		IdSize:     7,
+	return FactoryConfig{
+		MaxLimit:   constants.MAX_LIMIT,
+		ErrorRate:  constants.ERROR_RATE,
+		MaxTry:     constants.MAX_TRY,
+		IdSize:     constants.ID_SIZE,
 		BackupPath: bp,
 	}
 }
@@ -37,12 +38,12 @@ func bloomPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	wormDir := path.Join(home, ".wormholes")
+	wormDir := path.Join(home, constants.DOT_DIR)
 	_, err = os.Stat(wormDir)
 	if os.IsNotExist(err) {
-		if err := os.MkdirAll(wormDir, 0775); err != nil {
+		if err := os.MkdirAll(wormDir, constants.DIR_PERM); err != nil {
 			return "", err
 		}
 	}
-	return path.Join(wormDir, "bloom.db"), nil
+	return path.Join(wormDir, constants.BLOOM_DB), nil
 }

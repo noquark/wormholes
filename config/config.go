@@ -1,40 +1,27 @@
 package config
 
 import (
-	"flag"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
-	"strings"
 
-	"github.com/mohitsinghs/wormholes/database"
-	"github.com/mohitsinghs/wormholes/factory"
+	"github.com/mohitsinghs/wormholes/constants"
 	"gopkg.in/yaml.v3"
-)
-
-const (
-	DEFAULT_PORT    = 3000
-	DEFAULT_STREAMS = 8
-	DEFAULT_CONF    = "config.yml"
-	DEFAULT_DIR     = "wormholes"
-	DIR_PERM        = 0775
 )
 
 type Config struct {
 	Port     int
-	Streams  int
-	Postgres database.Postgres
-	Factory  factory.Conf
+	Postgres Postgres
+	Factory  FactoryConfig
+	Pipe     PipeConfig
 }
 
-func defaultConfig() Config {
+func Default() Config {
 	return Config{
-		Port:     DEFAULT_PORT,
-		Streams:  DEFAULT_STREAMS,
-		Postgres: database.Default(),
-		Factory:  factory.Default(),
+		Port:     constants.DEFAULT_PORT,
+		Postgres: DefaultPostgres(),
+		Factory:  DefaultFactory(),
+		Pipe:     DefaultPipe(),
 	}
 }
 
@@ -43,10 +30,10 @@ func configDir() string {
 	if err != nil {
 		log.Printf("Error getting home dir : %v", err)
 	}
-	cfgDir := filepath.Join(home, DEFAULT_DIR)
+	cfgDir := filepath.Join(home, constants.DEFAULT_DIR)
 	_, err = os.Stat(cfgDir)
 	if os.IsNotExist(err) {
-		if err := os.MkdirAll(cfgDir, DIR_PERM); err != nil {
+		if err := os.MkdirAll(cfgDir, constants.DIR_PERM); err != nil {
 			log.Printf("Error creating config dir : %v", err)
 		}
 	}
@@ -57,7 +44,7 @@ func writeDefault(cfgFile string) error {
 	if f, err := os.Create(cfgFile); err != nil {
 		return err
 	} else {
-		data, err := yaml.Marshal(defaultConfig())
+		data, err := yaml.Marshal(Default())
 		if err != nil {
 			return err
 		}
@@ -82,7 +69,7 @@ func Load(cfgFile string) (*Config, error) {
 }
 
 func LoadDefault() (*Config, error) {
-	cfgFile := filepath.Join(configDir(), DEFAULT_CONF)
+	cfgFile := filepath.Join(configDir(), constants.DEFAULT_CONF)
 	return LoadFromFile(cfgFile)
 }
 
@@ -103,23 +90,4 @@ func LoadFromFile(cfgFile string) (*Config, error) {
 		return nil, err
 	}
 	return &conf, nil
-}
-
-func Merge(prefix string, conf *Config) {
-	val := reflect.ValueOf(conf)
-	set := map[string]interface{}{}
-	flag.CommandLine.VisitAll(func(f *flag.Flag) {
-		env := fmt.Sprintf("%s_%s", prefix, strings.ToUpper(f.Name))
-		env = strings.Replace(env, "-", "_", -1)
-		if v := os.Getenv(env); v != "" {
-			if _, defined := set[f.Name]; !defined {
-				flag.CommandLine.Set(f.Name, v)
-			}
-		} else {
-			confv := reflect.Indirect(val).FieldByName(strings.Title(f.Name))
-			if confv.IsValid() {
-				flag.CommandLine.Set(f.Name, fmt.Sprint(confv))
-			}
-		}
-	})
 }

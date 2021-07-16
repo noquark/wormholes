@@ -9,15 +9,16 @@ import (
 
 	"github.com/bits-and-blooms/bloom/v3"
 	gonanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/mohitsinghs/wormholes/config"
 )
 
 type Factory struct {
 	Generated *bloom.BloomFilter
 	mutex     sync.RWMutex
-	conf      *Conf
+	conf      *config.FactoryConfig
 }
 
-func New(config *Conf) *Factory {
+func New(config *config.FactoryConfig) *Factory {
 	return &Factory{
 		Generated: bloom.NewWithEstimates(config.MaxLimit, config.ErrorRate),
 		mutex:     sync.RWMutex{},
