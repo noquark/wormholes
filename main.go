@@ -11,6 +11,7 @@ import (
 	"github.com/mohitsinghs/wormholes/app"
 	"github.com/mohitsinghs/wormholes/auth"
 	"github.com/mohitsinghs/wormholes/config"
+	"github.com/mohitsinghs/wormholes/constants"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
 	"github.com/mohitsinghs/wormholes/pipe"
@@ -19,18 +20,14 @@ import (
 var port int
 var cfgFile string
 
-const (
-	ENV_PREFIX = "WH"
-)
-
 func main() {
-	flag.IntVar(&port, "port", 3000, "Port to run")
+	flag.IntVar(&port, "port", constants.DEFAULT_PORT, "Port to run")
 	flag.StringVar(&cfgFile, "config", "", "Path to non-default config")
 	conf, err := config.Load(cfgFile)
 	if err != nil {
 		log.Printf("Failed to read config : %v", err)
 	}
-	config.Merge(ENV_PREFIX, conf)
+	config.Merge(constants.ENV_PREFIX, conf)
 	flag.Parse()
 
 	pgconn := conf.Postgres.Connect()

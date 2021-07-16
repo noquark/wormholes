@@ -1,4 +1,4 @@
-package database
+package config
 
 import (
 	"context"
@@ -21,7 +21,7 @@ type Postgres struct {
 	Port     int
 }
 
-func Default() Postgres {
+func DefaultPostgres() Postgres {
 	return Postgres{
 		Username: "postgres",
 		Password: "postgres",
