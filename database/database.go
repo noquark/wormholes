@@ -2,33 +2,15 @@ package database
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-const INITIAL_SCHEMA = `
--- enable uuid
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
--- users
-CREATE TABLE IF NOT EXISTS wh_users (
-  id uuid DEFAULT uuid_generate_v4(),
-  email text NOT NULL UNIQUE,
-  hashed_password varchar(255) NOT NULL,
-  created_at timestamptz NOT NULL default now(),
-  CONSTRAINT wh_users_pk PRIMARY KEY (id)
-);
-CREATE TABLE IF NOT EXISTS wh_links (
-  id varchar(255),
-  tag varchar(255),
-  target varchar(255),
-  created_at timestamptz NOT NULL default now(),
-  CONSTRAINT wh_links_pk PRIMARY KEY (id)
-);
-`
-
-// TODO: Add schema for timeseries events
+//go:embed database.sql
+var SCHEMA string
 
 // Postgres connection
 type Postgres struct {
@@ -66,7 +48,7 @@ func (p *Postgres) Connect() *pgxpool.Pool {
 		os.Exit(1)
 	}
 
-	_, err = dbpool.Exec(context.Background(), INITIAL_SCHEMA)
+	_, err = dbpool.Exec(context.Background(), SCHEMA)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create required tables: %v\n", err)
 		os.Exit(1)
