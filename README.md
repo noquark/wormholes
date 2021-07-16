@@ -11,16 +11,15 @@
 ### Features
 
 - Fast, fail safe and collisions free link creation.
-- Configurable via yaml, cli flags and environment variables.
+- Highly configurable
 - Easy to use docker image
 
 ### Requirements
 
-- Docker
-- TimescaleDB
+- [Docker](https://www.docker.com/)
+- [TimescaleDB](https://www.timescale.com/)
+- [GeoLite2-City](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en) data
 
 ### Roadmap
 
-- [x] Basic Auth APIs
-- [ ] Analytics dashboard
-- [ ] GeoLite2 integration
+- Analytics dashboard
