@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/mohitsinghs/wormholes/constants"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/pipe"
 )
@@ -17,15 +17,13 @@ const (
 )
 
 type Handler struct {
-	store   *session.Store
 	backend Store
 	factory *factory.Factory
 	pipe    *pipe.Pipe
 }
 
-func NewHandler(store *session.Store, backend Store, factory *factory.Factory, pipe *pipe.Pipe) *Handler {
+func NewHandler(backend Store, factory *factory.Factory, pipe *pipe.Pipe) *Handler {
 	return &Handler{
-		store,
 		backend,
 		factory,
 		pipe,
@@ -114,12 +112,17 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 	var cookie string
-	if c.Get(HeaderWormholesCookie) == "" {
-		cookie, _ := h.factory.NewCookie()
-		c.Set(HeaderWormholesCookie, cookie)
+	if c.Cookies(HeaderWormholesCookie) == "" {
+		cookie := h.factory.NewCookie()
+		c.Cookie(&fiber.Cookie{
+			Name:    HeaderWormholesCookie,
+			Value:   cookie,
+			Expires: time.Now().Add(time.Hour * 24 * 180),
+		})
 	} else {
-		cookie = c.Get(HeaderWormholesCookie)
+		cookie = c.Cookies(HeaderWormholesCookie)
 	}
+	c.Set(fiber.HeaderCacheControl, constants.CACHE_CONTROL)
 	h.pipe.Push(pipe.Event{
 		Time:   time.Now(),
 		Link:   link.Id,

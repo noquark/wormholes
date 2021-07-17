@@ -39,7 +39,6 @@ func cityPath() string {
 	}
 	cfgDir := filepath.Join(home, constants.DEFAULT_DIR)
 	_, err = os.Stat(cfgDir)
-	log.Println(err)
 	if os.IsNotExist(err) {
 		if err := os.MkdirAll(cfgDir, constants.DIR_PERM); err != nil {
 			return ""
