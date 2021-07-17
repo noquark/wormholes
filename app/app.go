@@ -8,11 +8,13 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/mohitsinghs/wormholes/auth"
+	"github.com/mohitsinghs/wormholes/config"
+	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
-	"github.com/mohitsinghs/wormholes/state"
+	"github.com/mohitsinghs/wormholes/pipe"
 )
 
-func Setup(state *state.State) *fiber.App {
+func Setup(config *config.Config, factory *factory.Factory, pipe *pipe.Pipe) *fiber.App {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
 		EnableTrustedProxyCheck: true,
@@ -20,20 +22,19 @@ func Setup(state *state.State) *fiber.App {
 
 	store := session.New(session.Config{
 		Expiration:   7 * 24 * time.Hour,
-		KeyGenerator: state.Factory.NewCookie,
+		KeyGenerator: factory.NewCookie,
 	})
 
-	authStore := auth.NewStore(state.DB)
-	linkStore := links.NewStore(state.DB)
+	db := config.Postgres.Connect()
+
+	authStore := auth.NewStore(db)
+	linkStore := links.NewStore(db)
 
 	authHandler := auth.NewHandler(store, authStore)
-	linkHandler := links.NewHandler(linkStore, state)
+	linkHandler := links.NewHandler(linkStore, factory, pipe)
 
-	state.Factory.TryRestore(linkStore.Ids)
-	authHandler.EnsureDefault(
-		state.Config.Admin.Email,
-		state.Config.Admin.Password,
-	)
+	factory.TryRestore(linkStore.Ids)
+	authHandler.EnsureDefault(config.Admin)
 
 	app.Use(etag.New())
 	app.Use(recover.New())

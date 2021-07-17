@@ -13,7 +13,6 @@ import (
 	"github.com/mohitsinghs/wormholes/constants"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/pipe"
-	"github.com/mohitsinghs/wormholes/state"
 )
 
 var port int
@@ -31,8 +30,7 @@ func main() {
 
 	f := factory.New(&conf.Factory)
 	p := pipe.New(conf).Start().Wait()
-	state := state.New(conf, f, p)
-	instance := app.Setup(state)
+	instance := app.Setup(conf, f, p)
 
 	go func() {
 		app.ShowHeader(port)
