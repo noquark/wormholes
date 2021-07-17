@@ -12,10 +12,6 @@ import (
 
 // Fiber route handlers for link
 
-const (
-	HeaderWormholesCookie = "_wh"
-)
-
 type Handler struct {
 	backend Store
 	factory *factory.Factory
@@ -112,15 +108,15 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 	var cookie string
-	if c.Cookies(HeaderWormholesCookie) == "" {
+	if c.Cookies(constants.COOKIE_NAME) == "" {
 		cookie := h.factory.NewCookie()
 		c.Cookie(&fiber.Cookie{
-			Name:    HeaderWormholesCookie,
+			Name:    constants.COOKIE_NAME,
 			Value:   cookie,
 			Expires: time.Now().Add(time.Hour * 24 * 180),
 		})
 	} else {
-		cookie = c.Cookies(HeaderWormholesCookie)
+		cookie = c.Cookies(constants.COOKIE_NAME)
 	}
 	c.Set(fiber.HeaderCacheControl, constants.CACHE_CONTROL)
 	h.pipe.Push(pipe.Event{
