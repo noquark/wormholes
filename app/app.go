@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/gofiber/fiber/v2/utils"
 	"github.com/mohitsinghs/wormholes/auth"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
@@ -21,13 +21,14 @@ func Setup(linkStore links.Store, authStore auth.Store, factory *factory.Factory
 
 	store := session.New(session.Config{
 		Expiration:   7 * 24 * time.Hour,
-		KeyGenerator: utils.UUID,
+		KeyGenerator: factory.NewCookie,
 	})
 
+	app.Use(etag.New())
 	app.Use(recover.New())
 
 	authHandler := auth.NewHandler(store, authStore)
-	linkHandler := links.NewHandler(store, linkStore, factory, pipe)
+	linkHandler := links.NewHandler(linkStore, factory, pipe)
 
 	app.Get("/:id", linkHandler.Redirect)
 

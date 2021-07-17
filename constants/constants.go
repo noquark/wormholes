@@ -10,6 +10,8 @@ const (
 	// common
 	DOT_DIR      = ".wormholes"
 	EMPTY_STRING = ""
+	// links
+	CACHE_CONTROL = "private, max-age=90"
 	// factory
 	BLOOM_DB   = "bloom.db"
 	MAX_LIMIT  = 1e7

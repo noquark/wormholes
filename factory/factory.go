@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/bits-and-blooms/bloom/v3"
+	"github.com/gofiber/fiber/v2/utils"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/mohitsinghs/wormholes/config"
 )
@@ -38,15 +39,16 @@ func (f *Factory) NewId() (string, error) {
 	return id, nil
 }
 
-func (f *Factory) NewCookie() (string, error) {
+// Generate cookie as a nanoid and fallback to uuid
+func (f *Factory) NewCookie() string {
 	id, err := gonanoid.New(21)
 	if err != nil || f.Exists(id) {
 		id = f.failSafeGenId(21)
 	}
 	if id == "" {
-		return "", errors.New("unable to generate valid cookie")
+		return utils.UUID()
 	}
-	return id, nil
+	return id
 }
 
 // Add unique id to genrated
