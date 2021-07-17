@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/mohitsinghs/wormholes/config"
 )
 
 type Handler struct {
@@ -25,12 +26,12 @@ type CreateRequest struct {
 	IsAdmin  bool   `json:"is_admin"`
 }
 
-func (h *Handler) EnsureDefault(email, password string) {
-	hash, err := GenerateFromPassword([]byte(password))
+func (h *Handler) EnsureDefault(admin config.Admin) {
+	hash, err := GenerateFromPassword([]byte(admin.Password))
 	if err != nil {
 		log.Panicln("failed to hash password for default user : ", err)
 	}
-	user := New(email, true)
+	user := New(admin.Email, true)
 	err = h.backend.InsertSafe(user, string(hash))
 	if err != nil {
 		log.Panicln("failed to create default user : ", err)
