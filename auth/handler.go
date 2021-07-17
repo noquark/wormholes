@@ -22,10 +22,27 @@ func NewHandler(store *session.Store, backend Store) *Handler {
 type CreateRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	IsAdmin  bool   `json:"is_admin"`
+}
+
+func (h *Handler) EnsureDefault(email, password string) {
+	hash, err := GenerateFromPassword([]byte(password))
+	if err != nil {
+		log.Panicln("failed to hash password for default user : ", err)
+	}
+	user := New(email, true)
+	err = h.backend.InsertSafe(user, string(hash))
+	if err != nil {
+		log.Panicln("failed to create default user : ", err)
+	}
 }
 
 // Create a new user
 func (h *Handler) Create(c *fiber.Ctx) error {
+	s, err := h.store.Get(c)
+	if err != nil || !s.Get("admin").(bool) {
+		return fiber.ErrUnauthorized
+	}
 	var createReq CreateRequest
 	if err := c.BodyParser(&createReq); err != nil {
 		log.Printf("Error parsing req : %v", err)
@@ -37,7 +54,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	user := New(createReq.Email)
+	user := New(createReq.Email, createReq.IsAdmin)
 	if err = h.backend.Insert(user, string(hash)); err != nil {
 		log.Printf("Error creating user : %v", err)
 		return fiber.ErrInternalServerError
@@ -56,7 +73,7 @@ func (h *Handler) Authenticate(c *fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	isValid := h.backend.ValidateAuth(email, password)
+	isValid, isAdmin := h.backend.ValidateAuth(email, password)
 
 	if isValid {
 		session, err := h.store.Get(c)
@@ -64,6 +81,7 @@ func (h *Handler) Authenticate(c *fiber.Ctx) error {
 			return fiber.ErrInternalServerError
 		}
 		session.Set("email", email)
+		session.Set("admin", isAdmin)
 
 		err = session.Save()
 		if err != nil {
@@ -120,4 +138,22 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 	return c.SendStatus(fiber.StatusOK)
+}
+
+// Verify user
+func (h *Handler) Verify(c *fiber.Ctx) error {
+	s, err := h.store.Get(c)
+	if err != nil || s.Get("email") == nil {
+		return fiber.ErrUnauthorized
+	}
+	return c.Next()
+}
+
+// Verify admin
+func (h *Handler) VerifyAdmin(c *fiber.Ctx) error {
+	s, err := h.store.Get(c)
+	if err != nil || s.Get("email") == nil || !s.Get("admin").(bool) {
+		return fiber.ErrUnauthorized
+	}
+	return c.Next()
 }

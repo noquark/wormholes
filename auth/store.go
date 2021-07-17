@@ -14,25 +14,34 @@ import (
 type Store struct {
 	db *pgxpool.Pool
 
-	sqlInsert   string
-	sqlGet      string
-	sqlDelete   string
-	sqlValidate string
+	sqlInsert     string
+	sqlInsertSafe string
+	sqlGet        string
+	sqlDelete     string
+	sqlValidate   string
 }
 
 func NewStore(pool *pgxpool.Pool) Store {
 	return Store{
-		db:          pool,
-		sqlInsert:   `INSERT INTO wh_users (email, hashed_password) VALUES ($1, $2);`,
-		sqlGet:      `SELECT id, email FROM wh_users where email=$1`,
-		sqlDelete:   `DELETE FROM wh_users WHERE email=$1;`,
-		sqlValidate: `SELECT hashed_password FROM wh_users WHERE email=$1`,
+		db:            pool,
+		sqlInsert:     `INSERT INTO wh_users (email, hashed_password, is_admin) VALUES ($1, $2, $3);`,
+		sqlInsertSafe: `INSERT INTO wh_users (email, hashed_password, is_admin) VALUES ($1, $2, $3) on conflict do nothing;`,
+		sqlGet:        `SELECT id, email, is_admin FROM wh_users where email=$1`,
+		sqlDelete:     `DELETE FROM wh_users WHERE email=$1;`,
+		sqlValidate:   `SELECT hashed_password, is_admin FROM wh_users WHERE email=$1`,
 	}
+}
+
+func (p *Store) InsertSafe(user *User, hash string) error {
+	_, err := p.db.Exec(context.Background(),
+		p.sqlInsertSafe, user.Email, hash, user.IsAdmin,
+	)
+	return err
 }
 
 func (p *Store) Insert(user *User, hash string) error {
 	_, err := p.db.Exec(context.Background(),
-		p.sqlInsert, user.Email, hash,
+		p.sqlInsert, user.Email, hash, user.IsAdmin,
 	)
 	if err != nil {
 		log.Printf("Error creating user : %v", err)
@@ -46,7 +55,7 @@ func (p *Store) Get(email string) (*User, error) {
 		p.sqlGet,
 		email,
 	)
-	err := rows.Scan(&user.Id, &user.Email)
+	err := rows.Scan(&user.Id, &user.Email, &user.IsAdmin)
 	switch err {
 	case pgx.ErrNoRows:
 		log.Printf("User not found : %v", err)
@@ -70,17 +79,18 @@ func (p *Store) Delete(email string) error {
 	return err
 }
 
-func (p *Store) ValidateAuth(email, password string) bool {
+func (p *Store) ValidateAuth(email, password string) (bool, bool) {
 	var hashedPassword string
+	var isAdmin bool
 	err := p.db.QueryRow(
 		context.Background(),
 		p.sqlValidate,
 		email,
-	).Scan(&hashedPassword)
+	).Scan(&hashedPassword, &isAdmin)
 	if err != nil {
 		log.Printf("Error getting hash %v", err)
-		return false
+		return false, false
 	}
 	err = CompareHashAndPassword(hashedPassword, []byte(password))
-	return err == nil
+	return err == nil, isAdmin
 }
