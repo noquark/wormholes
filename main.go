@@ -9,12 +9,11 @@ import (
 	"syscall"
 
 	"github.com/mohitsinghs/wormholes/app"
-	"github.com/mohitsinghs/wormholes/auth"
 	"github.com/mohitsinghs/wormholes/config"
 	"github.com/mohitsinghs/wormholes/constants"
 	"github.com/mohitsinghs/wormholes/factory"
-	"github.com/mohitsinghs/wormholes/links"
 	"github.com/mohitsinghs/wormholes/pipe"
+	"github.com/mohitsinghs/wormholes/state"
 )
 
 var port int
@@ -30,15 +29,10 @@ func main() {
 	config.Merge(constants.ENV_PREFIX, conf)
 	flag.Parse()
 
-	pgconn := conf.Postgres.Connect()
-
-	authStore := auth.NewStore(pgconn)
-	linkStore := links.NewStore(pgconn)
-
-	f := factory.New(&conf.Factory).TryRestore(linkStore.Ids)
+	f := factory.New(&conf.Factory)
 	p := pipe.New(conf).Start().Wait()
-
-	instance := app.Setup(linkStore, authStore, f, p)
+	state := state.New(conf, f, p)
+	instance := app.Setup(state)
 
 	go func() {
 		app.ShowHeader(port)

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,18 +15,74 @@ type Config struct {
 	Postgres Postgres
 	Factory  FactoryConfig
 	Pipe     PipeConfig
+	Admin    Admin
 }
 
-func Default() Config {
-	return Config{
-		Port:     constants.DEFAULT_PORT,
-		Postgres: DefaultPostgres(),
-		Factory:  DefaultFactory(),
-		Pipe:     DefaultPipe(),
+func Load(cfgFile string) (*Config, error) {
+	var conf *Config
+	// Use default config path if no other path is passed
+	if cfgFile == "" {
+		cfgFile = filepath.Join(defaultConfigDir(), constants.DEFAULT_CONF)
+	}
+	info, err := os.Stat(cfgFile)
+	// write and return config missing
+	if os.IsNotExist(err) || info.Size() == 0 {
+		conf = &Config{
+			Port:     constants.DEFAULT_PORT,
+			Postgres: DefaultPostgres(),
+			Factory:  DefaultFactory(),
+			Pipe:     DefaultPipe(),
+			Admin:    DefaultAdmin(),
+		}
+		conf.Update(cfgFile)
+		return conf, nil
+	}
+	// read and return config if exists
+	if info.Mode().IsRegular() {
+		data, err := os.ReadFile(cfgFile)
+		if err != nil {
+			log.Println("error reading config file : ", err)
+			return nil, err
+		}
+		var conf Config
+		if err := yaml.Unmarshal(data, &conf); err != nil {
+			log.Println("Error parsing config file : ", err)
+			return nil, err
+		}
+		return &conf, nil
+	}
+	if err != nil {
+		log.Println("failed to read/write config : ", err)
+		return nil, err
+	} else {
+		return nil, errors.New("failed to read/write config")
 	}
 }
 
-func configDir() string {
+// Update config on filesystem
+func (c *Config) Update(cfgFile string) {
+	log.Printf("Update called with config %v", c)
+	data, err := yaml.Marshal(c)
+	if err != nil {
+		log.Println("config is not writable :", err)
+		return
+	}
+	f, err := os.Create(cfgFile)
+	if err != nil {
+		log.Println("config is not writable :", err)
+		return
+	}
+	_, err = f.Write(data)
+	f.Close()
+	if err != nil {
+		log.Println("failed to update config : ", err)
+	} else {
+		log.Println("config updated")
+	}
+}
+
+// Ensure and return default config directory
+func defaultConfigDir() string {
 	home, err := os.UserConfigDir()
 	if err != nil {
 		log.Printf("Error getting home dir : %v", err)
@@ -38,56 +95,4 @@ func configDir() string {
 		}
 	}
 	return cfgDir
-}
-
-func writeDefault(cfgFile string) error {
-	if f, err := os.Create(cfgFile); err != nil {
-		return err
-	} else {
-		data, err := yaml.Marshal(Default())
-		if err != nil {
-			return err
-		}
-		_, err = f.Write(data)
-		f.Close()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func Load(cfgFile string) (*Config, error) {
-	var conf *Config
-	var err error
-	if cfgFile != "" {
-		conf, err = LoadFromFile(cfgFile)
-	} else {
-		conf, err = LoadDefault()
-	}
-	return conf, err
-}
-
-func LoadDefault() (*Config, error) {
-	cfgFile := filepath.Join(configDir(), constants.DEFAULT_CONF)
-	return LoadFromFile(cfgFile)
-}
-
-func LoadFromFile(cfgFile string) (*Config, error) {
-	if _, err := os.Stat(cfgFile); err != nil {
-		if os.IsNotExist(err) {
-			writeDefault(cfgFile)
-		}
-	}
-	data, err := os.ReadFile(cfgFile)
-	if err != nil {
-		log.Printf("Error reading config file : %v", err)
-		return nil, err
-	}
-	var conf Config
-	if err := yaml.Unmarshal(data, &conf); err != nil {
-		log.Printf("Error parsing config file : %v", err)
-		return nil, err
-	}
-	return &conf, nil
 }

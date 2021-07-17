@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Merge command line flags and environment variables with config
 func Merge(prefix string, conf *Config) {
 	val := reflect.ValueOf(conf)
 	set := map[string]interface{}{}

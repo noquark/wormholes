@@ -8,12 +8,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/mohitsinghs/wormholes/auth"
-	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
-	"github.com/mohitsinghs/wormholes/pipe"
+	"github.com/mohitsinghs/wormholes/state"
 )
 
-func Setup(linkStore links.Store, authStore auth.Store, factory *factory.Factory, pipe *pipe.Pipe) *fiber.App {
+func Setup(state *state.State) *fiber.App {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
 		EnableTrustedProxyCheck: true,
@@ -21,14 +20,23 @@ func Setup(linkStore links.Store, authStore auth.Store, factory *factory.Factory
 
 	store := session.New(session.Config{
 		Expiration:   7 * 24 * time.Hour,
-		KeyGenerator: factory.NewCookie,
+		KeyGenerator: state.Factory.NewCookie,
 	})
+
+	authStore := auth.NewStore(state.DB)
+	linkStore := links.NewStore(state.DB)
+
+	authHandler := auth.NewHandler(store, authStore)
+	linkHandler := links.NewHandler(linkStore, state)
+
+	state.Factory.TryRestore(linkStore.Ids)
+	authHandler.EnsureDefault(
+		state.Config.Admin.Email,
+		state.Config.Admin.Password,
+	)
 
 	app.Use(etag.New())
 	app.Use(recover.New())
-
-	authHandler := auth.NewHandler(store, authStore)
-	linkHandler := links.NewHandler(linkStore, factory, pipe)
 
 	app.Get("/:id", linkHandler.Redirect)
 

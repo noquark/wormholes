@@ -6,23 +6,21 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mohitsinghs/wormholes/constants"
-	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/pipe"
+	"github.com/mohitsinghs/wormholes/state"
 )
 
 // Fiber route handlers for link
 
 type Handler struct {
 	backend Store
-	factory *factory.Factory
-	pipe    *pipe.Pipe
+	state   *state.State
 }
 
-func NewHandler(backend Store, factory *factory.Factory, pipe *pipe.Pipe) *Handler {
+func NewHandler(backend Store, state *state.State) *Handler {
 	return &Handler{
 		backend,
-		factory,
-		pipe,
+		state,
 	}
 }
 
@@ -41,14 +39,14 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	var link *Link
 	if req.Custom != "" {
-		if h.factory.Exists(req.Custom) {
+		if h.state.Factory.Exists(req.Custom) {
 			log.Println("Link already exists")
 			return fiber.ErrBadRequest
 		}
 		link = New(req.Custom, req.Target, req.Tag)
-		h.factory.Add(req.Custom)
+		h.state.Factory.Add(req.Custom)
 	} else {
-		id, err := h.factory.NewId()
+		id, err := h.state.Factory.NewId()
 		if err != nil {
 			log.Printf("Error generating id : %v", err)
 			return fiber.ErrInternalServerError
@@ -99,7 +97,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 	if len(id) == 0 {
 		return fiber.ErrBadRequest
 	}
-	if !h.factory.Exists(id) {
+	if !h.state.Factory.Exists(id) {
 		return fiber.ErrNotFound
 	}
 	link, err := h.backend.Get(id)
@@ -109,7 +107,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 	}
 	var cookie string
 	if c.Cookies(constants.COOKIE_NAME) == "" {
-		cookie := h.factory.NewCookie()
+		cookie := h.state.Factory.NewCookie()
 		c.Cookie(&fiber.Cookie{
 			Name:    constants.COOKIE_NAME,
 			Value:   cookie,
@@ -119,7 +117,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 		cookie = c.Cookies(constants.COOKIE_NAME)
 	}
 	c.Set(fiber.HeaderCacheControl, constants.CACHE_CONTROL)
-	h.pipe.Push(pipe.Event{
+	h.state.Pipe.Push(pipe.Event{
 		Time:   time.Now(),
 		Link:   link.Id,
 		Tag:    link.Tag,
