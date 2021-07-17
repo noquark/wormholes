@@ -12,6 +12,7 @@ const (
 	EMPTY_STRING = ""
 	// links
 	CACHE_CONTROL = "private, max-age=90"
+	COOKIE_NAME   = "_wh"
 	// factory
 	BLOOM_DB   = "bloom.db"
 	MAX_LIMIT  = 1e7
