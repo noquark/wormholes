@@ -25,7 +25,7 @@ func DefaultPostgres() Postgres {
 	return Postgres{
 		Username: "postgres",
 		Password: "postgres",
-		Host:     "localhost",
+		Host:     "timescale",
 		Port:     5432,
 		Database: "postgres",
 	}
