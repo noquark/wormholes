@@ -12,6 +12,7 @@ import (
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/links"
 	"github.com/mohitsinghs/wormholes/pipe"
+	"github.com/mohitsinghs/wormholes/stats"
 )
 
 func Setup(config *config.Config, factory *factory.Factory, pipe *pipe.Pipe) *fiber.App {
@@ -29,9 +30,11 @@ func Setup(config *config.Config, factory *factory.Factory, pipe *pipe.Pipe) *fi
 
 	authStore := auth.NewStore(db)
 	linkStore := links.NewStore(db)
+	statsStore := stats.NewStore(db)
 
 	authHandler := auth.NewHandler(store, authStore)
 	linkHandler := links.NewHandler(linkStore, factory, pipe)
+	statsHandler := stats.NewHandler(statsStore)
 
 	factory.TryRestore(linkStore.Ids)
 	authHandler.EnsureDefault(config.Admin)
@@ -44,6 +47,9 @@ func Setup(config *config.Config, factory *factory.Factory, pipe *pipe.Pipe) *fi
 	apiV1 := app.Group("/api/v1")
 	linkApi := apiV1.Group("/links")
 	authApi := apiV1.Group("/auth")
+	statsApi := apiV1.Group("/stats")
+
+	statsApi.Use(authHandler.VerifyAdmin)
 
 	linkApi.Get("/:id", linkHandler.Get)
 	linkApi.Put("/", linkHandler.Create)
@@ -55,6 +61,8 @@ func Setup(config *config.Config, factory *factory.Factory, pipe *pipe.Pipe) *fi
 	authApi.Get("/logout", authHandler.Unauthenticate)
 	authApi.Get("/user", authHandler.Get)
 	authApi.Delete("/user", authHandler.Delete)
+
+	statsApi.Get("/cards", statsHandler.Cards)
 
 	return app
 }
