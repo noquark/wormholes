@@ -63,8 +63,8 @@ func (p *Store) Get(id string) (*Link, error) {
 	err := rows.Scan(&link.Id, &link.Target, &link.Tag)
 	switch err {
 	case pgx.ErrNoRows:
-		log.Printf("Link not found : %v", err)
-		return nil, errors.New("Link not found")
+		log.Printf("link not found : %v", err)
+		return nil, errors.New("link not found")
 	case nil:
 		return &link, nil
 	default:

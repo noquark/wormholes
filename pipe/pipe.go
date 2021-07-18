@@ -9,6 +9,8 @@ import (
 	"github.com/oschwald/geoip2-golang"
 )
 
+// Pipe with multiple streams to ingest data concurrently
+
 type Pipe struct {
 	Streams []*Stream
 	Task
@@ -47,12 +49,12 @@ func (p *Pipe) Wait() *Pipe {
 		defer p.ticker.Stop()
 		for {
 			select {
-			case event := <-p.Task:
+			case item := <-p.Task:
 				task := <-p.Queue
-				task <- event
+				task <- item
 			case <-p.ticker.C:
 				for _, s := range p.Streams {
-					if s.batch.Len() > 0 {
+					if s.Batch.Len() > 0 {
 						s.Ingest()
 					}
 				}
@@ -62,13 +64,13 @@ func (p *Pipe) Wait() *Pipe {
 	return p
 }
 
-func (p *Pipe) Push(event Event) {
-	p.Task <- event
+func (p *Pipe) Push(item interface{}) {
+	p.Task <- item
 }
 
-func (p *Pipe) Close(event Event) {
+func (p *Pipe) Close() {
 	for _, s := range p.Streams {
-		if s.batch.Len() > 0 {
+		if s.Batch.Len() > 0 {
 			s.Ingest()
 		}
 		s.Stop()
