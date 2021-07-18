@@ -119,14 +119,8 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 		cookie = c.Cookies(constants.COOKIE_NAME)
 	}
 	c.Set(fiber.HeaderCacheControl, constants.CACHE_CONTROL)
-	h.pipe.Push(pipe.Event{
-		Time:   time.Now(),
-		Link:   link.Id,
-		Tag:    link.Tag,
-		Cookie: cookie,
-		UA:     c.Get(fiber.HeaderUserAgent),
-		IP:     c.IP(),
-	})
+	e := pipe.NewEvent(link.Id, link.Tag, cookie, c.Get(fiber.HeaderUserAgent), c.IP())
+	h.pipe.Push(e)
 	return c.Redirect(link.Target, fiber.StatusMovedPermanently)
 }
 

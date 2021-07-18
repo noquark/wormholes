@@ -13,10 +13,11 @@ import (
 	"github.com/oschwald/geoip2-golang"
 )
 
-type Task chan Event
-type Queue chan chan Event
+const (
+	eventInsert = `insert into wh_clicks (time,link,tag,cookie,ip,is_mobile,is_bot,browser,browser_version,os, os_version,platform,lat,long,city,region,country,continent) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18);`
+)
 
-const sqlInsert = `insert into wh_clicks (time,link,tag,cookie,ip,is_mobile,is_bot,browser,browser_version,os, os_version,platform,lat,long,city,region,country,continent) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18);`
+// Stream to ingest data in batches
 
 type Stream struct {
 	Task
@@ -25,7 +26,7 @@ type Stream struct {
 	db        *pgxpool.Pool
 	ip        *geoip2.Reader
 	batchSize int
-	batch     *pgx.Batch
+	Batch     *pgx.Batch
 }
 
 func NewStream(queue Queue, db *pgxpool.Pool, ip *geoip2.Reader, batchSize int) *Stream {
@@ -36,7 +37,7 @@ func NewStream(queue Queue, db *pgxpool.Pool, ip *geoip2.Reader, batchSize int) 
 		db:        db,
 		ip:        ip,
 		batchSize: batchSize,
-		batch:     &pgx.Batch{},
+		Batch:     &pgx.Batch{},
 	}
 	return stream
 }
@@ -46,7 +47,7 @@ func (s *Stream) Start() {
 		s.Queue <- s.Task
 		select {
 		case event := <-s.Task:
-			s.Add(&event)
+			s.Add(event)
 		case <-s.Quit:
 			close(s.Task)
 			return
@@ -58,34 +59,40 @@ func (s *Stream) Stop() {
 	close(s.Quit)
 }
 
-func (s *Stream) Add(event *Event) {
-	ua := user_agent.New(event.UA)
-	browser, browser_version := ua.Browser()
-	address, _ := s.ip.City(net.ParseIP(event.IP))
-	region := ""
-	if len(address.Subdivisions) > 0 {
-		region = address.Subdivisions[0].Names[constants.EN]
+func (s *Stream) Add(item interface{}) {
+	switch item := item.(type) {
+	case Event:
+		ua := user_agent.New(item.UA)
+		browser, browser_version := ua.Browser()
+		address, _ := s.ip.City(net.ParseIP(item.IP))
+		region := ""
+		if len(address.Subdivisions) > 0 {
+			region = address.Subdivisions[0].Names[constants.EN]
+		}
+		s.Batch.Queue(
+			eventInsert,
+			item.Time, item.Link, item.Tag, item.Cookie, item.IP,
+			ua.Mobile(), ua.Bot(), browser, browser_version, ua.OSInfo().Name, ua.OSInfo().Version, ua.Platform(),
+			address.Location.Latitude, address.Location.Longitude, address.City.Names[constants.EN], region, address.Country.Names[constants.EN], address.Continent.Names[constants.EN],
+		)
+	default:
+		log.Println("ignoring item")
 	}
-	s.batch.Queue(
-		sqlInsert,
-		event.Time, event.Link, event.Tag, event.Cookie, event.IP,
-		ua.Mobile(), ua.Bot(), browser, browser_version, ua.OSInfo().Name, ua.OSInfo().Version, ua.Platform(),
-		address.Location.Latitude, address.Location.Longitude, address.City.Names[constants.EN], region, address.Country.Names[constants.EN], address.Continent.Names[constants.EN],
-	)
-	if s.batch.Len() > s.batchSize {
+
+	if s.Batch.Len() > s.batchSize {
 		s.Ingest()
 	}
 }
 
 func (s *Stream) Ingest() {
-	br := s.db.SendBatch(context.Background(), s.batch)
+	br := s.db.SendBatch(context.Background(), s.Batch)
 	_, err := br.Exec()
 	if err != nil {
-		log.Printf("error inserting event : %v", err)
+		log.Printf("error inserting item : %v", err)
 	}
 	err = br.Close()
 	if err != nil {
 		log.Printf("error closing batch : %v", err)
 	}
-	s.batch = &pgx.Batch{}
+	s.Batch = &pgx.Batch{}
 }
