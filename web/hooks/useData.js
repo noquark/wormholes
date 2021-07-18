@@ -6,17 +6,17 @@ export const Status = {
   SUCCESS: 'success',
 }
 
-export default function useUser() {
-  const [user, setUser] = useState()
+export default function useData(endpoint) {
+  const [data, setData] = useState()
   const [status, setStatus] = useState(Status.LOADING)
 
   useEffect(() => {
-    async function fetchUser() {
+    async function fetchData() {
       try {
-        const res = await window.fetch('/api/auth/user')
+        const res = await window.fetch(endpoint)
         if (res.ok) {
-          const user = await res.json()
-          setUser(user)
+          const data = await res.json()
+          setData(data)
           setStatus(Status.SUCCESS)
         } else {
           setStatus(Status.ERROR)
@@ -26,7 +26,7 @@ export default function useUser() {
         console.error(e)
       }
     }
-    fetchUser()
-  }, [])
-  return [user, status]
+    fetchData()
+  }, [endpoint])
+  return [data, status]
 }

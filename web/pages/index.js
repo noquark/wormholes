@@ -1,11 +1,11 @@
 import Home from '@/components/dashboard/Home'
 import Layout from '@/components/Layout'
 import Sidebar from '@/components/Sidebar'
-import useUser, { Status } from '@/hooks/useUser'
+import useData, { Status } from '@/hooks/useData'
 import { useRouter } from 'next/router'
 
 export default function IndexPage() {
-  const [user, status] = useUser()
+  const [user, status] = useData('api/auth/user')
   const router = useRouter()
 
   if (status === Status.SUCCESS) {
