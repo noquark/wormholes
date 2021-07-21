@@ -1,0 +1,26 @@
+#!/bin/env bash
+# set ulimit to 10M
+ulimit -n 1000000
+
+RUN=$1
+LINK=$2
+
+case $RUN in
+"create")
+wrk -t80 -d10s -c400 -s "$PWD/scripts/create.lua" http://localhost:5000/api/v1/links
+;;
+"get")
+wrk -t80 -d10s -c400 http://localhost:5000/$LINK
+;;
+"api")
+wrk -t80 -d10s -c400 http://localhost:5000/api/v1/links/$LINK
+;;
+"-h" | "--help")
+echo "Usage : load create|get|api <link>"
+exit 1
+;;
+*)
+echo "Unknown command"
+exit 1
+;;
+esac
