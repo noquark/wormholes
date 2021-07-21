@@ -1,28 +1,30 @@
 package links
 
 import (
-	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mohitsinghs/wormholes/constants"
 	"github.com/mohitsinghs/wormholes/factory"
 	"github.com/mohitsinghs/wormholes/pipe"
+	"github.com/rs/zerolog/log"
 )
 
 // Fiber route handlers for link
 
 type Handler struct {
-	backend Store
-	factory *factory.Factory
-	pipe    *pipe.Pipe
+	backend  Store
+	factory  *factory.Factory
+	pipe     *pipe.Pipe
+	ingestor *Ingestor
 }
 
-func NewHandler(backend Store, factory *factory.Factory, pipe *pipe.Pipe) *Handler {
+func NewHandler(backend Store, factory *factory.Factory, pipe *pipe.Pipe, ingestor *Ingestor) *Handler {
 	return &Handler{
 		backend,
 		factory,
 		pipe,
+		ingestor,
 	}
 }
 
@@ -35,31 +37,28 @@ type LinkCreateRequest struct {
 func (h *Handler) Create(c *fiber.Ctx) error {
 	var req LinkCreateRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Printf("Error parsing req : %v", err)
+		log.Error().Err(err).Msg("error parsing request")
 		return fiber.ErrBadRequest
 	}
 
 	var link *Link
 	if req.Custom != "" {
-		if h.factory.Exists(req.Custom) {
-			log.Println("Link already exists")
+		if h.factory.ID.Exists([]byte(req.Custom)) {
+			log.Error().Msg("link already exists")
 			return fiber.ErrBadRequest
 		}
 		link = New(req.Custom, req.Target, req.Tag)
-		h.factory.Add(req.Custom)
+		h.factory.ID.Add([]byte(req.Custom))
 	} else {
 		id, err := h.factory.NewId()
 		if err != nil {
-			log.Printf("Error generating id : %v", err)
+			log.Error().Err(err).Msg("error generating id")
 			return fiber.ErrInternalServerError
 		}
 		link = New(id, req.Target, req.Tag)
 	}
 
-	if err := h.backend.Insert(link); err != nil {
-		log.Printf("Error inserting link : %v", err)
-		return fiber.ErrInternalServerError
-	}
+	h.ingestor.Push(link)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Link Created",
@@ -70,11 +69,11 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 func (h *Handler) Update(c *fiber.Ctx) error {
 	var link Link
 	if err := c.BodyParser(&link); err != nil {
-		log.Printf("Error parsing req : %v", err)
+		log.Error().Err(err).Msg("error parsing request")
 		return fiber.ErrBadRequest
 	}
 	if err := h.backend.Update(&link); err != nil {
-		log.Printf("Error updating link : %v", err)
+		log.Error().Err(err).Msg("error updating link")
 		return fiber.ErrInternalServerError
 	}
 
@@ -88,7 +87,7 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 	}
 	link, err := h.backend.Get(id)
 	if err != nil {
-		log.Printf("Error getting link : %v", err)
+		log.Error().Err(err).Msg("error getting link")
 		return fiber.ErrBadRequest
 	}
 	return c.Status(fiber.StatusOK).JSON(link)
@@ -99,12 +98,12 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 	if len(id) == 0 {
 		return fiber.ErrBadRequest
 	}
-	if !h.factory.Exists(id) {
+	if !h.factory.ID.Exists([]byte(id)) {
 		return fiber.ErrNotFound
 	}
 	link, err := h.backend.Get(id)
 	if err != nil {
-		log.Printf("Error getting link : %v", err)
+		log.Error().Err(err).Msg("error getting link")
 		return fiber.ErrInternalServerError
 	}
 	var cookie string
@@ -119,8 +118,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 		cookie = c.Cookies(constants.COOKIE_NAME)
 	}
 	c.Set(fiber.HeaderCacheControl, constants.CACHE_CONTROL)
-	e := pipe.NewEvent(link.Id, link.Tag, cookie, c.Get(fiber.HeaderUserAgent), c.IP())
-	h.pipe.Push(e)
+	h.pipe.Push(pipe.NewEvent(link.Id, link.Tag, cookie, c.Get(fiber.HeaderUserAgent), c.IP()))
 	return c.Redirect(link.Target, fiber.StatusMovedPermanently)
 }
 
@@ -131,7 +129,7 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 	}
 
 	if err := h.backend.Delete(id); err != nil {
-		log.Printf("Error deleting link : %v", err)
+		log.Error().Err(err).Msg("error deleting link")
 		return fiber.ErrInternalServerError
 	}
 

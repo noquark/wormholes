@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,28 +11,31 @@ import (
 	"github.com/mohitsinghs/wormholes/config"
 	"github.com/mohitsinghs/wormholes/constants"
 	"github.com/mohitsinghs/wormholes/factory"
-	"github.com/mohitsinghs/wormholes/pipe"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var port int
 var cfgFile string
 
 func main() {
+	app.ShowNotice()
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	flag.IntVar(&port, "port", constants.DEFAULT_PORT, "Port to run")
 	flag.StringVar(&cfgFile, "config", "", "Path to non-default config")
 	conf, err := config.Load(cfgFile)
 	if err != nil {
-		log.Printf("Failed to read config : %v", err)
+		log.Error().Err(err).Msg("failed to read config")
 	}
 	config.Merge(constants.ENV_PREFIX, conf)
 	flag.Parse()
 
 	f := factory.New(&conf.Factory)
-	p := pipe.New(conf).Start().Wait()
-	instance := app.Setup(conf, f, p)
+	instance := app.Setup(conf, f)
 
 	go func() {
-		app.ShowHeader(port)
 		instance.Listen(fmt.Sprintf(":%d", port))
 	}()
 
@@ -41,14 +43,9 @@ func main() {
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 	<-ch
 	if err := instance.Shutdown(); err != nil {
-		log.Printf("Error stopping server : %v", err.Error())
+		log.Error().Err(err).Msg("error stopping server")
 	} else {
-		log.Println("Server Stopped")
+		log.Info().Msg("server stopped")
 	}
-
-	if err := f.Backup(); err != nil {
-		log.Printf("Error during backup : %v", err.Error())
-	} else {
-		log.Println("Backup Successful")
-	}
+	f.Backup()
 }

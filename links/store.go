@@ -14,7 +14,6 @@ import (
 type Store struct {
 	db *pgxpool.Pool
 
-	sqlInsert string
 	sqlUpdate string
 	sqlGet    string
 	sqlDelete string
@@ -24,23 +23,11 @@ type Store struct {
 func NewStore(pool *pgxpool.Pool) Store {
 	return Store{
 		db:        pool,
-		sqlInsert: `INSERT INTO wh_links (id, target, tag) VALUES ($1, $2, $3);`,
 		sqlUpdate: `UPDATE wh_links SET target=$1, tag=$2 where id=$3`,
 		sqlGet:    `SELECT id, target, tag FROM wh_links where id=$1`,
 		sqlDelete: `DELETE FROM wh_links WHERE id=$1`,
-		sqlIds:    `SELECT id from links`,
+		sqlIds:    `SELECT id from wh_links`,
 	}
-}
-
-func (p *Store) Insert(link *Link) error {
-	_, err := p.db.Exec(context.Background(),
-		p.sqlInsert,
-		link.Id, link.Target, link.Tag,
-	)
-	if err != nil {
-		log.Printf("Error creating link : %v", err)
-	}
-	return err
 }
 
 func (p *Store) Update(link *Link) error {
@@ -61,16 +48,7 @@ func (p *Store) Get(id string) (*Link, error) {
 		id,
 	)
 	err := rows.Scan(&link.Id, &link.Target, &link.Tag)
-	switch err {
-	case pgx.ErrNoRows:
-		log.Printf("link not found : %v", err)
-		return nil, errors.New("link not found")
-	case nil:
-		return &link, nil
-	default:
-		log.Printf("Error getting link : %v", err)
-		return nil, err
-	}
+	return &link, err
 }
 
 func (p *Store) Delete(id string) error {

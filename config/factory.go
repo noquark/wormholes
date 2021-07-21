@@ -10,11 +10,10 @@ import (
 )
 
 type FactoryConfig struct {
-	MaxLimit   uint
-	ErrorRate  float64
-	MaxTry     int
-	IdSize     int
-	BackupPath string
+	MaxLimit                              uint
+	ErrorRate                             float64
+	MaxTry, IdSize, CookieSize, TokenSize int
+	BackupPath                            string
 }
 
 func DefaultFactory() FactoryConfig {
@@ -27,6 +26,8 @@ func DefaultFactory() FactoryConfig {
 		ErrorRate:  constants.ERROR_RATE,
 		MaxTry:     constants.MAX_TRY,
 		IdSize:     constants.ID_SIZE,
+		CookieSize: constants.COOKIE_SIZE,
+		TokenSize:  constants.TOKEN_SIZE,
 		BackupPath: bp,
 	}
 }
@@ -45,5 +46,5 @@ func bloomPath() (string, error) {
 			return "", err
 		}
 	}
-	return path.Join(wormDir, constants.BLOOM_DB), nil
+	return wormDir, nil
 }

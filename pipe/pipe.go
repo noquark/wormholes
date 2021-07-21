@@ -10,6 +10,8 @@ import (
 )
 
 // Pipe with multiple streams to ingest data concurrently
+// For now Event is only data being ingested, but this
+// implementation can handle more than one type of data
 
 type Pipe struct {
 	Streams []*Stream
@@ -22,12 +24,12 @@ type Pipe struct {
 	ticker    *time.Ticker
 }
 
-func New(conf *config.Config) *Pipe {
+func New(conf *config.Config, db *pgxpool.Pool) *Pipe {
 	return &Pipe{
 		Streams:   make([]*Stream, 0),
 		Task:      make(Task),
 		Queue:     make(Queue),
-		db:        conf.Postgres.Connect(),
+		db:        db,
 		ip:        conf.Pipe.OpenDB(),
 		batchSize: conf.Pipe.BatchSize,
 		size:      conf.Pipe.Streams,

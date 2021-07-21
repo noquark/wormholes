@@ -11,11 +11,12 @@ import (
 )
 
 type Config struct {
-	Port     int
-	Postgres Postgres
-	Factory  FactoryConfig
-	Pipe     PipeConfig
-	Admin    Admin
+	Port      int
+	Postgres  Postgres
+	Timescale Postgres
+	Factory   FactoryConfig
+	Pipe      PipeConfig
+	Admin     Admin
 }
 
 func Load(cfgFile string) (*Config, error) {
@@ -28,11 +29,12 @@ func Load(cfgFile string) (*Config, error) {
 	// write and return config missing
 	if os.IsNotExist(err) || info.Size() == 0 {
 		conf = &Config{
-			Port:     constants.DEFAULT_PORT,
-			Postgres: DefaultPostgres(),
-			Factory:  DefaultFactory(),
-			Pipe:     DefaultPipe(),
-			Admin:    DefaultAdmin(),
+			Port:      constants.DEFAULT_PORT,
+			Postgres:  DefaultPostgres(),
+			Timescale: DefaultTimescale(),
+			Factory:   DefaultFactory(),
+			Pipe:      DefaultPipe(),
+			Admin:     DefaultAdmin(),
 		}
 		conf.Update(cfgFile)
 		return conf, nil
