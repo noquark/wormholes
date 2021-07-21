@@ -1,0 +1,19 @@
+#!/bin/env bash
+# access shell for various databases
+
+case $1 in
+"pg")
+  docker exec -it postgres psql -U postgres
+  ;;
+"ts")
+  docker exec -it timescale psql -U postgres
+  ;;
+"-h" | "--help")
+  echo "Usage : shell pg|ts"
+  exit 1
+  ;;
+*)
+  echo "Unknown command"
+  exit 1
+  ;;
+esac

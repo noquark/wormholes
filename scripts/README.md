@@ -4,30 +4,14 @@ This directory contains various scripts for development and load testing.
 
 ## Managing database
 
-To create databases
-
 ```sh
-./scripts/create
-```
-
-And, to destroy them
-
-```sh
-./scripts/destroy
+./scripts/ctl create|destroy pg|ts
 ```
 
 ## Accessing shells
 
-To access postgres shell, run
-
 ```sh
-./script/db
-```
-
-and for timescale shell, run
-
-```sh
-./script/tsdb
+./script/shell pg|ts
 ```
 
 ## Load testing
@@ -43,7 +27,7 @@ Test links creation with
 Now, Pick one link from links table. Access shell with
 
 ```sh
-./scripts/db
+./scripts/shell pg
 ```
 
 and get a link with
