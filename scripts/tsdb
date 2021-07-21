@@ -1,4 +1,2 @@
-#!/bin/env zsh
-# Access timescaledb shell
-
+#!/bin/env bash
 docker exec -it timescale psql -U postgres
