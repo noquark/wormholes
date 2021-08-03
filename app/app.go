@@ -32,7 +32,7 @@ func Setup(config *config.Config, factory *factory.Factory) *fiber.App {
 	// db stores for routes
 	authStore := auth.NewStore(db)
 	linkStore := links.NewStore(db)
-	statsStore := stats.NewStore(db)
+	statsStore := stats.NewStore(db, tsdb)
 
 	// route handlers
 	authHandler := auth.NewHandler(store, authStore)
