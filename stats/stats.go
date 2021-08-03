@@ -6,8 +6,3 @@ type Overview struct {
 	Clicks uint64 `json:"clicks"`
 	Users  uint64 `json:"users"`
 }
-
-type DBSize struct {
-	Links  string `json:"links"`
-	Clicks string `json:"clicks"`
-}
