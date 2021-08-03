@@ -18,7 +18,7 @@
 .home {
   @apply overflow-x-hidden overflow-y-auto flex flex-col flex-shrink-0 flex-grow;
   & h1 {
-    @apply bg-gray-200 p-8  w-full text-2xl font-semibold text-gray-700 text-center;
+    @apply bg-blue-100 p-8  w-full text-2xl font-semibold text-gray-700 text-center;
     @screen md {
       @apply text-left;
     }
@@ -26,7 +26,7 @@
   & header {
     @apply relative pb-8;
     & ul.cards {
-      @apply flex flex-col items-center px-2 bg-gray-200;
+      @apply flex flex-col items-center px-2 bg-blue-100;
       @screen md {
         @apply flex-wrap flex-row;
       }
@@ -42,7 +42,7 @@
           @apply text-3xl text-gray-700 font-semibold mb-4;
         }
         & p {
-          @apply text-xs uppercase font-bold text-gray-500;
+          @apply text-xs uppercase font-bold text-gray-600;
         }
       }
     }
@@ -54,7 +54,7 @@
         @apply relative block h-8;
       }
       & path {
-        @apply fill-current text-gray-200;
+        @apply fill-current text-blue-100;
       }
     }
   }

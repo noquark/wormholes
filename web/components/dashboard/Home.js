@@ -35,10 +35,6 @@ export default function Home() {
               title={formatter.format(data?.overview?.users)}
               desc='Unique Users'
             />
-            <StatsCard
-              title={`${data?.db_size?.links} / ${data?.db_size?.clicks}`}
-              desc='Links / Clicks Size'
-            />
           </ul>
           <Divider />
         </header>
