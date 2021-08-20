@@ -16,12 +16,17 @@ var POSTGRES string
 //go:embed sql/timescale.sql
 var TIMESCALE string
 
-const TYPE_POSTGRES = "postgres"
-const TYPE_TIMESCALE = "timescale"
+const (
+	TypePostgres         = "postgres"
+	TypeTimescale        = "timescale"
+	DefaultPostgresPort  = 5432
+	DefaultTimescalePort = 5432
+	DefaultMaxConn       = 5000
+)
 
-// Postgres connection
+// Postgres connection.
 type Postgres struct {
-	DbType   string
+	DBType   string
 	Username string
 	Password string
 	Host     string
@@ -31,22 +36,22 @@ type Postgres struct {
 
 func DefaultPostgres() Postgres {
 	return Postgres{
-		DbType:   TYPE_POSTGRES,
+		DBType:   TypePostgres,
 		Username: "postgres",
 		Password: "postgres",
 		Host:     "postgres",
-		Port:     5432,
+		Port:     DefaultPostgresPort,
 		Database: "postgres",
 	}
 }
 
 func DefaultTimescale() Postgres {
 	return Postgres{
-		DbType:   TYPE_TIMESCALE,
+		DBType:   TypeTimescale,
 		Username: "postgres",
 		Password: "postgres",
 		Host:     "timescale",
-		Port:     5432,
+		Port:     DefaultTimescalePort,
 		Database: "postgres",
 	}
 }
@@ -57,7 +62,6 @@ func (p *Postgres) CreateTables(pool *pgxpool.Pool, schema string) {
 		fmt.Fprintf(os.Stderr, "Unable to create required tables: %v\n", err)
 		os.Exit(1)
 	}
-
 }
 
 func (p *Postgres) Connect() *pgxpool.Pool {
@@ -68,10 +72,13 @@ func (p *Postgres) Connect() *pgxpool.Pool {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	if p.DbType == TYPE_POSTGRES {
+
+	if p.DBType == TypePostgres {
 		log.Info().Msg("setting max connections to 5000")
-		config.MaxConns = 5000
+
+		config.MaxConns = DefaultMaxConn
 	}
+
 	dbpool, err := pgxpool.ConnectConfig(
 		context.Background(), config,
 	)
@@ -80,7 +87,7 @@ func (p *Postgres) Connect() *pgxpool.Pool {
 		os.Exit(1)
 	}
 
-	if p.DbType == TYPE_POSTGRES {
+	if p.DBType == TypePostgres {
 		p.CreateTables(dbpool, POSTGRES)
 	} else {
 		p.CreateTables(dbpool, TIMESCALE)

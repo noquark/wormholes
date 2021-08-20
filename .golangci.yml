@@ -1,0 +1,38 @@
+run:
+  modules-download-mode: readonly
+output:
+  format: tab
+linters-settings:
+  exhaustivestruct:
+    struct-patterns:
+      - '*.Test'
+      - 'example.com/package.ExampleStruct'
+  gofumpt:
+    lang-version: '1.17'
+  wrapcheck:
+    ignoreSigs:
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - .Wrap(
+      - .Wrapf(
+      - .WithMessage(
+      - .WithMessagef(
+      - .WithStack(
+      # fiber specific
+      - .SendStatus(
+      - .Status(
+      - .JSON(
+      - .Next(
+      - .Redirect(
+linters:
+  disable-all: false
+  enable-all: true
+  disable:
+    - interfacer
+    - scopelint
+    - maligned
+    - golint
+    # disabled for embeds
+    - gochecknoglobals
+    - exhaustivestruct

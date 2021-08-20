@@ -17,32 +17,37 @@ type PipeConfig struct {
 
 func DefaultPipe() PipeConfig {
 	return PipeConfig{
-		Streams:   constants.STREAMS,
-		BatchSize: constants.BATCH_SIZE,
+		Streams:   constants.Streams,
+		BatchSize: constants.BatchSize,
 	}
 }
 
 func (p *PipeConfig) OpenDB() *geoip2.Reader {
 	dbPath := cityPath()
+
 	db, err := geoip2.Open(dbPath)
 	if err != nil {
 		log.Panicln("Missing GeoLite2-City.mmdb")
 	}
+
 	return db
 }
 
-// Get path for GeoLite2-City.mmdb
+// Get path for GeoLite2-City.mmdb.
 func cityPath() string {
 	home, err := os.UserConfigDir()
 	if err != nil {
 		log.Printf("Error getting home dir : %v", err)
 	}
-	cfgDir := filepath.Join(home, constants.DEFAULT_DIR)
+
+	cfgDir := filepath.Join(home, constants.DefaultDir)
+
 	_, err = os.Stat(cfgDir)
 	if os.IsNotExist(err) {
-		if err := os.MkdirAll(cfgDir, constants.DIR_PERM); err != nil {
+		if err := os.MkdirAll(cfgDir, constants.DirPerm); err != nil {
 			return ""
 		}
 	}
-	return path.Join(cfgDir, constants.CITY_DB)
+
+	return path.Join(cfgDir, constants.CityDB)
 }

@@ -3,6 +3,7 @@ package links
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/jackc/pgx/v4"
@@ -33,22 +34,31 @@ func NewStore(pool *pgxpool.Pool) Store {
 func (p *Store) Update(link *Link) error {
 	_, err := p.db.Exec(context.Background(),
 		p.sqlUpdate,
-		link.Target, link.Tag, link.Id,
+		link.Target, link.Tag, link.ID,
 	)
 	if err != nil {
 		log.Printf("Error updating link : %v", err)
+
+		return fmt.Errorf("failed to update link: %w", err)
 	}
-	return err
+
+	return nil
 }
 
 func (p *Store) Get(id string) (*Link, error) {
 	var link Link
+
 	rows := p.db.QueryRow(context.Background(),
 		p.sqlGet,
 		id,
 	)
-	err := rows.Scan(&link.Id, &link.Target, &link.Tag)
-	return &link, err
+
+	err := rows.Scan(&link.ID, &link.Target, &link.Tag)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve link: %w", err)
+	}
+
+	return &link, nil
 }
 
 func (p *Store) Delete(id string) error {
@@ -58,8 +68,10 @@ func (p *Store) Delete(id string) error {
 	)
 	if err != nil {
 		log.Printf("Error deleting link %v", err)
-		return err
+
+		return fmt.Errorf("failed to delete link: %w", err)
 	}
+
 	return nil
 }
 
@@ -69,23 +81,31 @@ func (p *Store) Ids() ([]string, error) {
 	)
 	if err != nil {
 		log.Printf("Error during ids query : %v", err)
-		return nil, errors.New("error getting ids")
+
+		return nil, fmt.Errorf("failed to retrieve ids: %w", err)
 	}
 	defer rows.Close()
+
 	ids := []string{}
+
 	for rows.Next() {
 		var id string
+
 		err := rows.Scan(&id)
-		switch err {
-		case pgx.ErrNoRows:
+		if errors.Is(err, pgx.ErrNoRows) {
 			log.Printf("Ids not found : %v", err)
-			return nil, errors.New("Ids not found")
-		case nil:
-			ids = append(ids, id)
-		default:
+
+			return nil, fmt.Errorf("failed to find ids: %w", err)
+		}
+
+		if err != nil {
 			log.Printf("Error getting id : %v", err)
+
 			continue
 		}
+
+		ids = append(ids, id)
 	}
+
 	return ids, nil
 }

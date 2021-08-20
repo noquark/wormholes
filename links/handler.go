@@ -10,6 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const CookieExpiryTime = time.Hour * 24 * 180
+
 // Fiber route handlers for link
 
 type Handler struct {
@@ -38,21 +40,26 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	var req LinkCreateRequest
 	if err := c.BodyParser(&req); err != nil {
 		log.Error().Err(err).Msg("error parsing request")
+
 		return fiber.ErrBadRequest
 	}
 
 	var link *Link
+
 	if req.Custom != "" {
 		if h.factory.ID.Exists([]byte(req.Custom)) {
 			log.Error().Msg("link already exists")
+
 			return fiber.ErrBadRequest
 		}
+
 		link = New(req.Custom, req.Target, req.Tag)
 		h.factory.ID.Add([]byte(req.Custom))
 	} else {
-		id, err := h.factory.NewId()
+		id, err := h.factory.NewID()
 		if err != nil {
 			log.Error().Err(err).Msg("error generating id")
+
 			return fiber.ErrInternalServerError
 		}
 		link = New(id, req.Target, req.Tag)
@@ -62,7 +69,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Link Created",
-		"id":     link.Id,
+		"id":     link.ID,
 	})
 }
 
@@ -70,10 +77,13 @@ func (h *Handler) Update(c *fiber.Ctx) error {
 	var link Link
 	if err := c.BodyParser(&link); err != nil {
 		log.Error().Err(err).Msg("error parsing request")
+
 		return fiber.ErrBadRequest
 	}
+
 	if err := h.backend.Update(&link); err != nil {
 		log.Error().Err(err).Msg("error updating link")
+
 		return fiber.ErrInternalServerError
 	}
 
@@ -85,11 +95,14 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 	if len(id) == 0 {
 		return fiber.ErrBadRequest
 	}
+
 	link, err := h.backend.Get(id)
 	if err != nil {
 		log.Error().Err(err).Msg("error getting link")
+
 		return fiber.ErrBadRequest
 	}
+
 	return c.Status(fiber.StatusOK).JSON(link)
 }
 
@@ -98,27 +111,35 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 	if len(id) == 0 {
 		return fiber.ErrBadRequest
 	}
+
 	if !h.factory.ID.Exists([]byte(id)) {
 		return fiber.ErrNotFound
 	}
+
 	link, err := h.backend.Get(id)
 	if err != nil {
 		log.Error().Err(err).Msg("error getting link")
+
 		return fiber.ErrInternalServerError
 	}
+
 	var cookie string
-	if c.Cookies(constants.COOKIE_NAME) == "" {
+
+	if c.Cookies(constants.CookieName) == "" {
 		cookie := h.factory.NewCookie()
+
 		c.Cookie(&fiber.Cookie{
-			Name:    constants.COOKIE_NAME,
+			Name:    constants.CookieName,
 			Value:   cookie,
-			Expires: time.Now().Add(time.Hour * 24 * 180),
+			Expires: time.Now().Add(CookieExpiryTime),
 		})
 	} else {
-		cookie = c.Cookies(constants.COOKIE_NAME)
+		cookie = c.Cookies(constants.CookieName)
 	}
-	c.Set(fiber.HeaderCacheControl, constants.CACHE_CONTROL)
-	h.pipe.Push(pipe.NewEvent(link.Id, link.Tag, cookie, c.Get(fiber.HeaderUserAgent), c.IP()))
+
+	c.Set(fiber.HeaderCacheControl, constants.CacheControl)
+	h.pipe.Push(pipe.NewEvent(link.ID, link.Tag, cookie, c.Get(fiber.HeaderUserAgent), c.IP()))
+
 	return c.Redirect(link.Target, fiber.StatusMovedPermanently)
 }
 
@@ -130,6 +151,7 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 
 	if err := h.backend.Delete(id); err != nil {
 		log.Error().Err(err).Msg("error deleting link")
+
 		return fiber.ErrInternalServerError
 	}
 

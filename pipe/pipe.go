@@ -9,6 +9,8 @@ import (
 	"github.com/oschwald/geoip2-golang"
 )
 
+const TickerInterval = time.Second * 10
+
 // Pipe with multiple streams to ingest data concurrently
 // For now Event is only data being ingested, but this
 // implementation can handle more than one type of data
@@ -33,7 +35,7 @@ func New(conf *config.Config, db *pgxpool.Pool) *Pipe {
 		ip:        conf.Pipe.OpenDB(),
 		batchSize: conf.Pipe.BatchSize,
 		size:      conf.Pipe.Streams,
-		ticker:    time.NewTicker(10 * time.Second),
+		ticker:    time.NewTicker(TickerInterval),
 	}
 }
 
@@ -43,12 +45,14 @@ func (p *Pipe) Start() *Pipe {
 		go stream.Start()
 		p.Streams = append(p.Streams, stream)
 	}
+
 	return p
 }
 
 func (p *Pipe) Wait() *Pipe {
 	go func() {
 		defer p.ticker.Stop()
+
 		for {
 			select {
 			case item := <-p.Task:
@@ -63,6 +67,7 @@ func (p *Pipe) Wait() *Pipe {
 			}
 		}
 	}()
+
 	return p
 }
 
@@ -75,7 +80,9 @@ func (p *Pipe) Close() {
 		if s.Batch.Len() > 0 {
 			s.Ingest()
 		}
+
 		s.Stop()
 	}
+
 	log.Println("All streams are closed")
 }

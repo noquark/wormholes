@@ -38,6 +38,7 @@ func NewStream(queue Queue, db *pgxpool.Pool, ip *geoip2.Reader, batchSize int) 
 		batchSize: batchSize,
 		Batch:     &pgx.Batch{},
 	}
+
 	return stream
 }
 
@@ -49,6 +50,7 @@ func (s *Stream) Start() {
 			s.Add(event)
 		case <-s.Quit:
 			close(s.Task)
+
 			return
 		}
 	}
@@ -62,17 +64,20 @@ func (s *Stream) Add(item interface{}) {
 	switch item := item.(type) {
 	case Event:
 		ua := user_agent.New(item.UA)
-		browser, browser_version := ua.Browser()
+		browser, browserVersion := ua.Browser()
 		address, _ := s.ip.City(net.ParseIP(item.IP))
 		region := ""
+
 		if len(address.Subdivisions) > 0 {
 			region = address.Subdivisions[0].Names[constants.EN]
 		}
+
 		s.Batch.Queue(
 			eventInsert,
 			item.Time, item.Link, item.Tag, item.Cookie, item.IP,
-			ua.Mobile(), ua.Bot(), browser, browser_version, ua.OSInfo().Name, ua.OSInfo().Version, ua.Platform(),
-			address.Location.Latitude, address.Location.Longitude, address.City.Names[constants.EN], region, address.Country.Names[constants.EN], address.Continent.Names[constants.EN],
+			ua.Mobile(), ua.Bot(), browser, browserVersion, ua.OSInfo().Name, ua.OSInfo().Version, ua.Platform(),
+			address.Location.Latitude, address.Location.Longitude,
+			address.City.Names[constants.EN], region, address.Country.Names[constants.EN], address.Continent.Names[constants.EN],
 		)
 	default:
 		log.Println("ignoring item")
@@ -85,13 +90,16 @@ func (s *Stream) Add(item interface{}) {
 
 func (s *Stream) Ingest() {
 	br := s.db.SendBatch(context.Background(), s.Batch)
+
 	_, err := br.Exec()
 	if err != nil {
 		log.Printf("error inserting item : %v", err)
 	}
+
 	err = br.Close()
 	if err != nil {
 		log.Printf("error closing batch : %v", err)
 	}
+
 	s.Batch = &pgx.Batch{}
 }

@@ -2,6 +2,7 @@ package stats
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -24,19 +25,24 @@ func NewStore(db, tsdb *pgxpool.Pool) Store {
 
 func (s *Store) Overview() (*Overview, error) {
 	var overview Overview
+
 	rows := s.db.QueryRow(context.Background(),
 		s.sqlLinks,
 	)
+
 	err := rows.Scan(&overview.Links, &overview.Tags)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get links and tags: %w", err)
 	}
+
 	rows = s.tsdb.QueryRow(context.Background(),
 		s.sqlUsers,
 	)
+
 	err = rows.Scan(&overview.Clicks, &overview.Users)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get clicks and users: %w", err)
 	}
+
 	return &overview, nil
 }

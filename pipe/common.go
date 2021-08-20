@@ -1,4 +1,6 @@
 package pipe
 
-type Task chan interface{}
-type Queue chan chan interface{}
+type (
+	Task  chan interface{}
+	Queue chan chan interface{}
+)
