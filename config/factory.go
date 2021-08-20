@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -12,7 +13,7 @@ import (
 type FactoryConfig struct {
 	MaxLimit                              uint
 	ErrorRate                             float64
-	MaxTry, IdSize, CookieSize, TokenSize int
+	MaxTry, IDSize, CookieSize, TokenSize int
 	BackupPath                            string
 }
 
@@ -21,30 +22,34 @@ func DefaultFactory() FactoryConfig {
 	if err != nil {
 		log.Panicln(err.Error())
 	}
+
 	return FactoryConfig{
-		MaxLimit:   constants.MAX_LIMIT,
-		ErrorRate:  constants.ERROR_RATE,
-		MaxTry:     constants.MAX_TRY,
-		IdSize:     constants.ID_SIZE,
-		CookieSize: constants.COOKIE_SIZE,
-		TokenSize:  constants.TOKEN_SIZE,
+		MaxLimit:   constants.MaxLimit,
+		ErrorRate:  constants.ErrorRate,
+		MaxTry:     constants.MaxTry,
+		IDSize:     constants.IDSize,
+		CookieSize: constants.CookieSize,
+		TokenSize:  constants.TokenSize,
 		BackupPath: bp,
 	}
 }
 
 // Get backup path for bloom filter creating directories
-// if they don't exist
+// if they don't exist.
 func bloomPath() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read home directory: %w", err)
 	}
-	wormDir := path.Join(home, constants.DOT_DIR)
+
+	wormDir := path.Join(home, constants.DotDir)
+
 	_, err = os.Stat(wormDir)
 	if os.IsNotExist(err) {
-		if err := os.MkdirAll(wormDir, constants.DIR_PERM); err != nil {
-			return "", err
+		if err := os.MkdirAll(wormDir, constants.DirPerm); err != nil {
+			return "", fmt.Errorf("failed to create required directories  : %w", err)
 		}
 	}
+
 	return wormDir, nil
 }

@@ -7,9 +7,9 @@ import (
 // user model and constructor
 
 type User struct {
-	Id      uuid.UUID `json:"id"`
+	ID      uuid.UUID `json:"id"`
 	Email   string    `json:"email"`
-	IsAdmin bool      `json:"is_admin"`
+	IsAdmin bool      `json:"isAdmin"`
 }
 
 func New(email string, isAdmin bool) *User {

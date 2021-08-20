@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/jackc/pgx/v4"
@@ -36,7 +37,11 @@ func (p *Store) InsertSafe(user *User, hash string) error {
 	_, err := p.db.Exec(context.Background(),
 		p.sqlInsertSafe, user.Email, hash, user.IsAdmin,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to create user safely: %w", err)
+	}
+
+	return nil
 }
 
 func (p *Store) Insert(user *User, hash string) error {
@@ -45,27 +50,29 @@ func (p *Store) Insert(user *User, hash string) error {
 	)
 	if err != nil {
 		log.Printf("Error creating user : %v", err)
+
+		return fmt.Errorf("failed to create user: %w", err)
 	}
-	return err
+
+	return nil
 }
 
 func (p *Store) Get(email string) (*User, error) {
 	var user User
+
 	rows := p.db.QueryRow(context.Background(),
 		p.sqlGet,
 		email,
 	)
-	err := rows.Scan(&user.Id, &user.Email, &user.IsAdmin)
-	switch err {
-	case pgx.ErrNoRows:
+	err := rows.Scan(&user.ID, &user.Email, &user.IsAdmin)
+
+	if errors.Is(err, pgx.ErrNoRows) {
 		log.Printf("User not found : %v", err)
-		return nil, errors.New("User not found")
-	case nil:
-		return &user, nil
-	default:
-		log.Printf("Error getting user : %v", err)
-		return nil, err
+
+		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
+
+	return &user, nil
 }
 
 func (p *Store) Delete(email string) error {
@@ -75,13 +82,18 @@ func (p *Store) Delete(email string) error {
 	)
 	if err != nil {
 		log.Printf("Error deleting user: %v", err)
+
+		return fmt.Errorf("failed to delete user: %w", err)
 	}
-	return err
+
+	return nil
 }
 
 func (p *Store) ValidateAuth(email, password string) (bool, bool) {
 	var hashedPassword string
+
 	var isAdmin bool
+
 	err := p.db.QueryRow(
 		context.Background(),
 		p.sqlValidate,
@@ -89,8 +101,11 @@ func (p *Store) ValidateAuth(email, password string) (bool, bool) {
 	).Scan(&hashedPassword, &isAdmin)
 	if err != nil {
 		log.Printf("Error getting hash %v", err)
+
 		return false, false
 	}
+
 	err = CompareHashAndPassword(hashedPassword, []byte(password))
+
 	return err == nil, isAdmin
 }

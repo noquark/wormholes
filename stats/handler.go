@@ -17,6 +17,7 @@ func (h *Handler) Cards(c *fiber.Ctx) error {
 	if err != nil {
 		return fiber.ErrInternalServerError
 	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"overview": overview,
 	})

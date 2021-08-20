@@ -16,6 +16,7 @@ import (
 	"github.com/mohitsinghs/wormholes/stats"
 )
 
+// nolint:funlen
 func Setup(config *config.Config, factory *factory.Factory) *fiber.App {
 	//  shared connection pool
 	db := config.Postgres.Connect()
@@ -60,33 +61,33 @@ func Setup(config *config.Config, factory *factory.Factory) *fiber.App {
 
 	// group routes
 	apiV1 := app.Group("/api/v1")
-	linkApi := apiV1.Group("/links")
-	authApi := apiV1.Group("/auth")
-	statsApi := apiV1.Group("/stats")
+	linkAPI := apiV1.Group("/links")
+	authAPI := apiV1.Group("/auth")
+	statsAPI := apiV1.Group("/stats")
 
 	// configure middlewares on routes
 	csrfMW := csrf.New(csrf.Config{
 		KeyGenerator: factory.NewCookie,
 	})
-	authApi.Use(csrfMW)
-	statsApi.Use(csrfMW)
-	statsApi.Use(authHandler.VerifyAdmin)
+	authAPI.Use(csrfMW)
+	statsAPI.Use(csrfMW)
+	statsAPI.Use(authHandler.VerifyAdmin)
 
 	// link routes
-	linkApi.Get("/:id", linkHandler.Get)
-	linkApi.Put("/", linkHandler.Create)
-	linkApi.Post("/:id", linkHandler.Update)
-	linkApi.Delete("/:id", linkHandler.Delete)
+	linkAPI.Get("/:id", linkHandler.Get)
+	linkAPI.Put("/", linkHandler.Create)
+	linkAPI.Post("/:id", linkHandler.Update)
+	linkAPI.Delete("/:id", linkHandler.Delete)
 
 	// auth routes
-	authApi.Post("/register", authHandler.Create)
-	authApi.Get("/login", authHandler.Authenticate)
-	authApi.Get("/logout", authHandler.Unauthenticate)
-	authApi.Get("/user", authHandler.Get)
-	authApi.Delete("/user", authHandler.Delete)
+	authAPI.Post("/register", authHandler.Create)
+	authAPI.Get("/login", authHandler.Authenticate)
+	authAPI.Get("/logout", authHandler.Unauthenticate)
+	authAPI.Get("/user", authHandler.Get)
+	authAPI.Delete("/user", authHandler.Delete)
 
 	// stats routes
-	statsApi.Get("/cards", statsHandler.Cards)
+	statsAPI.Get("/cards", statsHandler.Cards)
 
 	return app
 }

@@ -13,7 +13,9 @@ import (
 //go:embed sql/insert_link.sql
 var linkInsert string
 
-// A simple link ingestor
+const TickerInterval = time.Second * 10
+
+// A simple link ingestor.
 type Ingestor struct {
 	db        *pgxpool.Pool
 	batchSize int
@@ -30,19 +32,21 @@ func NewIngestor(db *pgxpool.Pool, batchSize int) *Ingestor {
 		batch:     &pgx.Batch{},
 		quit:      make(chan struct{}),
 		source:    make(chan *Link),
-		ticker:    time.NewTicker(10 * time.Second),
+		ticker:    time.NewTicker(TickerInterval),
 	}
 }
 
 func (i *Ingestor) Start() *Ingestor {
 	go func() {
 		defer i.ticker.Stop()
+
 		for {
 			select {
 			case link := <-i.source:
 				i.add(link)
 			case <-i.quit:
 				close(i.source)
+
 				return
 			case <-i.ticker.C:
 				if i.batch.Len() > 0 {
@@ -51,6 +55,7 @@ func (i *Ingestor) Start() *Ingestor {
 			}
 		}
 	}()
+
 	return i
 }
 
@@ -61,7 +66,8 @@ func (i *Ingestor) Push(link *Link) {
 func (i *Ingestor) add(link *Link) {
 	i.batch.Queue(
 		linkInsert,
-		link.Id, link.Tag, link.Target)
+		link.ID, link.Tag, link.Target)
+
 	if i.batch.Len() > i.batchSize {
 		i.ingest()
 	}
@@ -69,13 +75,16 @@ func (i *Ingestor) add(link *Link) {
 
 func (i *Ingestor) ingest() {
 	br := i.db.SendBatch(context.Background(), i.batch)
+
 	_, err := br.Exec()
 	if err != nil {
 		log.Printf("error inserting item : %v", err)
 	}
+
 	err = br.Close()
 	if err != nil {
 		log.Printf("error closing batch : %v", err)
 	}
+
 	i.batch = &pgx.Batch{}
 }
