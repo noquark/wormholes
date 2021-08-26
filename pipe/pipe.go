@@ -6,7 +6,6 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mohitsinghs/wormholes/config"
-	"github.com/oschwald/geoip2-golang"
 )
 
 const TickerInterval = time.Second * 10
@@ -20,7 +19,6 @@ type Pipe struct {
 	Task
 	Queue
 	db        *pgxpool.Pool
-	ip        *geoip2.Reader
 	batchSize int
 	size      int
 	ticker    *time.Ticker
@@ -32,7 +30,6 @@ func New(conf *config.Config, db *pgxpool.Pool) *Pipe {
 		Task:      make(Task),
 		Queue:     make(Queue),
 		db:        db,
-		ip:        conf.Pipe.OpenDB(),
 		batchSize: conf.Pipe.BatchSize,
 		size:      conf.Pipe.Streams,
 		ticker:    time.NewTicker(TickerInterval),
@@ -41,7 +38,7 @@ func New(conf *config.Config, db *pgxpool.Pool) *Pipe {
 
 func (p *Pipe) Start() *Pipe {
 	for i := 0; i < p.size; i++ {
-		stream := NewStream(p.Queue, p.db, p.ip, p.batchSize)
+		stream := NewStream(p.Queue, p.db, p.batchSize)
 		go stream.Start()
 		p.Streams = append(p.Streams, stream)
 	}

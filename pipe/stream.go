@@ -4,13 +4,10 @@ import (
 	"context"
 	_ "embed"
 	"log"
-	"net"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mohitsinghs/wormholes/constants"
 	"github.com/mssola/user_agent"
-	"github.com/oschwald/geoip2-golang"
 )
 
 //go:embed sql/insert_event.sql
@@ -23,18 +20,16 @@ type Stream struct {
 	Queue
 	Quit      chan struct{}
 	db        *pgxpool.Pool
-	ip        *geoip2.Reader
 	batchSize int
 	Batch     *pgx.Batch
 }
 
-func NewStream(queue Queue, db *pgxpool.Pool, ip *geoip2.Reader, batchSize int) *Stream {
+func NewStream(queue Queue, db *pgxpool.Pool, batchSize int) *Stream {
 	stream := &Stream{
 		Task:      make(Task),
 		Queue:     queue,
 		Quit:      make(chan struct{}),
 		db:        db,
-		ip:        ip,
 		batchSize: batchSize,
 		Batch:     &pgx.Batch{},
 	}
@@ -65,19 +60,11 @@ func (s *Stream) Add(item interface{}) {
 	case Event:
 		ua := user_agent.New(item.UA)
 		browser, browserVersion := ua.Browser()
-		address, _ := s.ip.City(net.ParseIP(item.IP))
-		region := ""
-
-		if len(address.Subdivisions) > 0 {
-			region = address.Subdivisions[0].Names[constants.EN]
-		}
 
 		s.Batch.Queue(
 			eventInsert,
 			item.Time, item.Link, item.Tag, item.Cookie, item.IP,
 			ua.Mobile(), ua.Bot(), browser, browserVersion, ua.OSInfo().Name, ua.OSInfo().Version, ua.Platform(),
-			address.Location.Latitude, address.Location.Longitude,
-			address.City.Names[constants.EN], region, address.Country.Names[constants.EN], address.Continent.Names[constants.EN],
 		)
 	default:
 		log.Println("ignoring item")

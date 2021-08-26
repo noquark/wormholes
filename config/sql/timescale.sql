@@ -11,13 +11,7 @@ create table if not exists wh_clicks (
   os text,
   os_version text,
   platform text,
-  ip text,
-  lat double precision,
-  long double precision,
-  city text,
-  region text,
-  country text,
-  continent text
+  ip text
 );
 
 -- create hypertable
