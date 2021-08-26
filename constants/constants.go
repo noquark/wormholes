@@ -11,7 +11,6 @@ const (
 	EmptyString  = ""
 	CacheControl = "private, max-age=90"
 	CookieName   = "_wh"
-	BloomDB      = "bloom.db"
 	MaxLimit     = 1e7
 	ErrorRate    = 1e-3
 	MaxTry       = 10
@@ -20,6 +19,4 @@ const (
 	TokenSize    = 43
 	Streams      = 8
 	BatchSize    = 1e4
-	CityDB       = "GeoLite2-City.mmdb"
-	EN           = "en"
 )
