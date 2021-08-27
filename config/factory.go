@@ -11,10 +11,10 @@ import (
 )
 
 type FactoryConfig struct {
-	MaxLimit                              uint
-	ErrorRate                             float64
-	MaxTry, IDSize, CookieSize, TokenSize int
-	BackupPath                            string
+	MaxLimit                   uint
+	ErrorRate                  float64
+	MaxTry, IDSize, CookieSize int
+	BackupPath                 string
 }
 
 func DefaultFactory() FactoryConfig {
@@ -29,7 +29,6 @@ func DefaultFactory() FactoryConfig {
 		MaxTry:     constants.MaxTry,
 		IDSize:     constants.IDSize,
 		CookieSize: constants.CookieSize,
-		TokenSize:  constants.TokenSize,
 		BackupPath: bp,
 	}
 }
