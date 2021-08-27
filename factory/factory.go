@@ -18,7 +18,6 @@ func New(config *config.FactoryConfig) *Factory {
 	return &Factory{
 		ID:     NewBloom("id", config.BackupPath, config.MaxLimit, config.ErrorRate),
 		Cookie: NewBloom("cookie", config.BackupPath, config.MaxLimit, config.ErrorRate),
-		Token:  NewBloom("token", config.BackupPath, config.MaxLimit, config.ErrorRate),
 		conf:   config,
 	}
 }
@@ -49,22 +48,10 @@ func (f *Factory) NewCookie() string {
 	return cookie
 }
 
-func (f *Factory) NewToken() string {
-	token, err := gonanoid.New(f.conf.TokenSize)
-	if err != nil || f.Token.Exists([]byte(token)) {
-		token = f.failSafe(f.conf.TokenSize, f.Token)
-	}
-
-	f.Token.Add([]byte(token))
-
-	return token
-}
-
 // Backup all bloom-filters.
 func (f *Factory) Backup() {
 	f.ID.Backup()
 	f.Cookie.Backup()
-	f.Token.Backup()
 }
 
 // Restore all bloom-filters.
@@ -75,7 +62,6 @@ func (f *Factory) Restore(restoreFunc func() ([]string, error)) {
 	}
 
 	f.Cookie.Restore()
-	f.Token.Restore()
 }
 
 // Try genrating new id at least specified times.

@@ -16,7 +16,6 @@ const (
 	MaxTry       = 10
 	IDSize       = 7
 	CookieSize   = 21
-	TokenSize    = 43
 	Streams      = 8
 	BatchSize    = 1e4
 )

@@ -19,7 +19,6 @@ type Config struct {
 	Timescale Postgres
 	Factory   FactoryConfig
 	Pipe      PipeConfig
-	Admin     Admin
 }
 
 func Load(cfgFile string) (*Config, error) {
@@ -39,7 +38,6 @@ func Load(cfgFile string) (*Config, error) {
 			Timescale: DefaultTimescale(),
 			Factory:   DefaultFactory(),
 			Pipe:      DefaultPipe(),
-			Admin:     DefaultAdmin(),
 		}
 		conf.Update(cfgFile)
 
