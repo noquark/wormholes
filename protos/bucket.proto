@@ -1,0 +1,15 @@
+syntax = "proto3";
+package protos;
+
+option go_package="/protos";
+option optimize_for = SPEED;
+
+message Empty {}
+
+message Bucket {
+  repeated string ids = 1;
+}
+
+service BucketService {
+  rpc GetBucket (Empty) returns (Bucket);
+}

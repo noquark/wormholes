@@ -7,10 +7,3 @@
   <sub>powered by Fiber and TimescaleDB</sub>
 </p>
 <br />
-
-## Features
-
-- Highly configurable
-- Easy to use docker image
-- Analytics dashboard (WIP)
-- API keys (WIP)

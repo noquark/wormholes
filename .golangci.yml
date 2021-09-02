@@ -3,10 +3,6 @@ run:
 output:
   format: tab
 linters-settings:
-  exhaustivestruct:
-    struct-patterns:
-      - '*.Test'
-      - 'example.com/package.ExampleStruct'
   gofumpt:
     lang-version: '1.17'
   wrapcheck:
@@ -35,4 +31,6 @@ linters:
     - golint
     # disabled for embeds
     - gochecknoglobals
+    - paralleltest
     - exhaustivestruct
+    - gci
