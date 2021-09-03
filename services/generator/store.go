@@ -1,5 +1,7 @@
 package main
 
+import "sync"
+
 const (
 	BUCKET_EMPTY = iota
 	BUCKET_BUSY  = iota
@@ -8,6 +10,7 @@ const (
 
 // An in-memory store with multiple buckets and their status
 type MemStore struct {
+	mutex    sync.RWMutex
 	status   map[int]int
 	buckets  [][]string
 	capacity int
@@ -16,6 +19,7 @@ type MemStore struct {
 // Create a new memory store for given bucket size and capacity
 func NewMemStore(size, capacity int) *MemStore {
 	memStore := &MemStore{
+		mutex:    sync.RWMutex{},
 		status:   make(map[int]int, size),
 		buckets:  make([][]string, size),
 		capacity: capacity,
@@ -30,6 +34,8 @@ func NewMemStore(size, capacity int) *MemStore {
 // Get index of all buckets that are empty
 func (s *MemStore) GetEmpty() []int {
 	var emptyBucketIDs []int
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	for id, status := range s.status {
 		if status == BUCKET_EMPTY {
 			emptyBucketIDs = append(emptyBucketIDs, id)
@@ -41,6 +47,8 @@ func (s *MemStore) GetEmpty() []int {
 // Pop first bucket that is full
 func (s *MemStore) Pop() []string {
 	var data []string
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	for id, status := range s.status {
 		if status == BUCKET_FULL {
 			data = make([]string, s.capacity)
