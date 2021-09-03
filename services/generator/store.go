@@ -43,10 +43,11 @@ func (s *MemStore) Pop() []string {
 	var data []string
 	for id, status := range s.status {
 		if status == BUCKET_FULL {
-			data := make([]string, s.capacity)
+			data = make([]string, s.capacity)
 			copy(data, s.buckets[id])
 			s.status[id] = BUCKET_EMPTY
 			s.buckets[id] = make([]string, s.capacity)
+			break
 		}
 	}
 	return data
