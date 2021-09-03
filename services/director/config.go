@@ -1,9 +1,10 @@
 package main
 
 import (
+	"wormholes/internal/db"
+
 	"github.com/caarlos0/env/v6"
 	"github.com/rs/zerolog/log"
-	"wormholes/internal/db"
 )
 
 // Top Level Config.
