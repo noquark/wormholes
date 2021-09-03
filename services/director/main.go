@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"wormholes/internal/header"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"wormholes/internal/header"
 )
 
 func main() {
