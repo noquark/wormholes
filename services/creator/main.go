@@ -31,7 +31,7 @@ func main() {
 	pool := conf.Postgres.Connect()
 	store = NewPgStore(pool)
 
-	ingestor := NewIngestor(pool, conf.BatchSize)
+	ingestor := NewIngestor(pool, conf.BatchSize).Start()
 	cache := conf.Redis.Connect()
 
 	handler := NewHandler(store, ingestor, cache, client)
