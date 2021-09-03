@@ -2,19 +2,22 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"wormholes/protos"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gomodule/redigo/redis"
 	"github.com/rs/zerolog/log"
 )
+
+var ErrNoIds = errors.New("failed to get id")
 
 // Fiber route handlers for link.
 type Handler struct {
 	backend      Store
 	ingestor     *Ingestor
-	cache        *redis.Pool
+	cache        *redis.Client
 	bucket       *protos.Bucket
 	bucketClient protos.BucketServiceClient
 }
@@ -22,7 +25,7 @@ type Handler struct {
 func NewHandler(
 	backend Store,
 	ingestor *Ingestor,
-	cache *redis.Pool,
+	cache *redis.Client,
 	bucketClient protos.BucketServiceClient,
 ) *Handler {
 	return &Handler{
@@ -55,10 +58,14 @@ func (h *Handler) getID() (string, error) {
 		}
 	}
 
-	id := h.bucket.Ids[0]
-	h.bucket.Ids = h.bucket.Ids[1:]
+	if len(h.bucket.Ids) > 0 {
+		id := h.bucket.Ids[0]
+		h.bucket.Ids = h.bucket.Ids[1:]
 
-	return id, nil
+		return id, nil
+	}
+
+	return "", ErrNoIds
 }
 
 func (h *Handler) Setup(app *fiber.App) {
@@ -90,11 +97,10 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	id, err := h.getID()
 	if err != nil {
-		return fiber.ErrInternalServerError
+		return err
 	}
 
 	link = NewLink(id, req.Target, req.Tag)
-
 	h.ingestor.Push(link)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -128,12 +134,10 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 
 	var link *Link
 
-	// retrieve data from cache first
-	conn := h.cache.Get()
-	val, err := redis.Values(conn.Do("HGETALL", id))
-	errScan := redis.ScanStruct(val, link)
+	ctx := context.Background()
 
-	if err != nil || errScan != nil {
+	err := h.cache.HGetAll(ctx, id).Scan(link)
+	if err != nil {
 		log.Err(err).Msg("get: cache miss")
 
 		// If key does not exists, query db
@@ -144,7 +148,7 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 			return fiber.ErrBadRequest
 		}
 
-		_, _ = conn.Do("HSET", redis.Args{}.Add(id).AddFlat(link)...)
+		_ = h.cache.HSet(ctx, id, link).Err()
 	}
 
 	return c.Status(fiber.StatusOK).JSON(link)

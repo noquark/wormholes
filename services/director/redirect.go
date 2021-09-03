@@ -5,8 +5,8 @@ import (
 	_ "embed"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gomodule/redigo/redis"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
 )
@@ -25,10 +25,10 @@ var linkGet string
 type Handler struct {
 	pipe  *Pipe
 	db    *pgxpool.Pool
-	cache *redis.Pool
+	cache *redis.Client
 }
 
-func NewHandler(pipe *Pipe, db *pgxpool.Pool, cache *redis.Pool) *Handler {
+func NewHandler(pipe *Pipe, db *pgxpool.Pool, cache *redis.Client) *Handler {
 	return &Handler{
 		pipe,
 		db,
@@ -44,12 +44,8 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 
 	var link Link
 
-	// retrieve data from cache first
-	conn := h.cache.Get()
-	val, err := redis.Values(conn.Do("HGETALL", id))
-	errScan := redis.ScanStruct(val, &link)
-
-	if err != nil || errScan != nil {
+	err := h.cache.HGetAll(context.Background(), id).Scan(&link)
+	if err != nil {
 		log.Err(err).Msg("redirect: cache miss")
 
 		// If key does not exists, query db
@@ -65,7 +61,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 			return fiber.ErrInternalServerError
 		}
 
-		_, _ = conn.Do("HSET", redis.Args{}.Add(id).AddFlat(link)...)
+		_ = h.cache.HSet(context.Background(), id, link).Err()
 	}
 
 	var cookie string
