@@ -37,7 +37,7 @@ type Factory struct {
 func NewFactory(config *Config) *Factory {
 	return &Factory{
 		db:    config.Postgres.Connect(),
-		bloom: NewBloom("id", uint(config.MaxLimit), config.ErrorRate),
+		bloom: NewBloom(config.MaxLimit, config.ErrorRate),
 		store: NewMemStore(config.Size, config.Capacity),
 		size:  config.IDSize,
 		tick:  time.NewTicker(time.Second),
