@@ -4,27 +4,18 @@ import (
 	"fmt"
 	"os"
 	"wormholes/internal/header"
-	"wormholes/protos"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/grpc"
 )
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	conf := DefaultConfig()
-
-	conn, err := grpc.Dial(conf.GenAddr, grpc.WithInsecure(), grpc.WithBlock())
-	if err != nil {
-		log.Error().Err(err).Msg("grpc: failed to connect")
-	}
-	defer conn.Close()
-	client := protos.NewBucketServiceClient(conn)
 
 	var store Store
 
@@ -33,8 +24,9 @@ func main() {
 
 	ingestor := NewIngestor(pool, conf.BatchSize).Start()
 	cache := conf.Redis.Connect()
+	reserve := NewReserve(conf.GenAddr)
 
-	handler := NewHandler(store, ingestor, cache, client)
+	handler := NewHandler(store, ingestor, cache, reserve)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
