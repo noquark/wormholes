@@ -62,7 +62,7 @@ func (f *Factory) Prepare() *Factory {
 		}
 
 		atomic.AddUint64(&idCount, 1)
-		f.bloom.Add(unsafeFromString(id))
+		f.bloom.Add(fasterByte(id))
 
 	}
 	if idCount > 0 {
@@ -97,18 +97,24 @@ func (f *Factory) Shutdown() {
 
 // populate bucket at given index until full
 func (f *Factory) populateBucket(idx int) {
+	t := time.Now()
+	log.Info().Msgf("filling bucket %d", idx)
+
 	fillCount := 0
 	for fillCount < f.store.capacity {
 		id, err := nanoid.New(f.size)
-		if err == nil && id != "" && !f.bloom.Exists(unsafeFromString(id)) {
-			f.store.buckets[idx][fillCount] = id
-			f.bloom.Add(unsafeFromString(id))
-			fillCount++
+		if err == nil && id != "" {
+			if !f.bloom.Exists(fasterByte(id)) {
+				f.store.buckets[idx][fillCount] = id
+				f.bloom.Add(fasterByte(id))
+				fillCount++
+			}
 		}
 	}
 	f.store.mutex.Lock()
 	f.store.status[idx] = BUCKET_FULL
 	f.store.mutex.Unlock()
+	log.Info().Msgf("filled bucket %d in %s", idx, time.Since(t).String())
 }
 
 func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*protos.Bucket, error) {
@@ -121,7 +127,7 @@ func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*prot
 	}, nil
 }
 
-func unsafeFromString(s string) []byte {
+func fasterByte(s string) []byte {
 	return unsafe.Slice(
 		(*byte)(unsafe.Pointer(
 			(*reflect.StringHeader)(unsafe.Pointer(&s)).Data)),
