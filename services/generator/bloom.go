@@ -4,6 +4,8 @@ import (
 	"sync"
 
 	"github.com/bits-and-blooms/bloom/v3"
+	"github.com/dustin/go-humanize"
+	"github.com/rs/zerolog/log"
 )
 
 // A thread safe wrapper around bloom filter with backup and restore
@@ -13,10 +15,16 @@ type Bloom struct {
 }
 
 func NewBloom(maxLimit uint, errorRate float64) *Bloom {
-	return &Bloom{
+	b := &Bloom{
 		bloom: bloom.NewWithEstimates(maxLimit, errorRate),
 		mutex: sync.RWMutex{},
 	}
+
+	log.Info().Msgf("bloom-filter: size %s", humanize.Bytes(uint64(b.bloom.Cap()/8)))
+	log.Info().Msgf("bloom-filter: limit %s", humanize.Comma(int64(maxLimit)))
+	log.Info().Msgf("bloom-filter: errorRate %f", errorRate)
+
+	return b
 }
 
 func (b *Bloom) Add(id []byte) {
