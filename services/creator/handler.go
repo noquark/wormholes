@@ -96,11 +96,11 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	var link *Link
+	var link Link
 
 	ctx := context.Background()
 
-	err := h.cache.HGetAll(ctx, id).Scan(link)
+	err := h.cache.HGetAll(ctx, id).Scan(&link)
 	if err != nil {
 		log.Err(err).Msg("get: cache miss")
 
