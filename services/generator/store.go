@@ -1,6 +1,11 @@
 package main
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/dustin/go-humanize"
+	"github.com/rs/zerolog/log"
+)
 
 const (
 	BUCKET_EMPTY = iota
@@ -28,6 +33,10 @@ func NewMemStore(size, capacity int) *MemStore {
 		memStore.buckets[i] = make([]string, capacity)
 		memStore.status[i] = BUCKET_EMPTY
 	}
+
+	log.Info().Msgf("memstore: bucket capacity %s", humanize.Comma(int64(capacity)))
+	log.Info().Msgf("memstore: number of buckets %d", size)
+
 	return memStore
 }
 

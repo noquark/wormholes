@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"time"
 	"unsafe"
 	"wormholes/protos"
 
+	"github.com/cheggaaa/pb/v3"
+	"github.com/dustin/go-humanize"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mohitsinghs/nanoid"
 	"github.com/rs/zerolog/log"
@@ -16,7 +17,9 @@ import (
 )
 
 const (
-	queryIDs string = `SELECT id from wh_links`
+	queryIDs      string = `SELECT id from wh_links`
+	queryIDsCount string = `SELECT count(id) from wh_links`
+	maxBarWidth          = 64
 )
 
 var ErrFactoryEmpty = status.New(codes.ResourceExhausted, "factory is empty").Err()
@@ -45,28 +48,36 @@ func NewFactory(config *Config) *Factory {
 }
 
 func (f *Factory) Prepare() *Factory {
-	rows, err := f.db.Query(context.Background(), queryIDs)
-	if err != nil {
-		log.Warn().Err(err).Msg("failed to retrieve IDs")
-		return f
-	}
-	defer rows.Close()
 	var idCount uint64
-	for rows.Next() {
-		var id string
-		err := rows.Scan(&id)
-		if err != nil {
-			log.Warn().Err(err).Msg("failed to parse ID")
-
-			continue
-		}
-
-		atomic.AddUint64(&idCount, 1)
-		f.bloom.Add(fasterByte(id))
-
+	err := f.db.QueryRow(context.Background(), queryIDsCount).Scan(&idCount)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to get IDs count")
 	}
+
 	if idCount > 0 {
-		log.Info().Msgf("cached %d IDs for lookup", idCount)
+		rows, err := f.db.Query(context.Background(), queryIDs)
+		if err != nil {
+			log.Warn().Err(err).Msg("failed to get IDs")
+			return f
+		}
+		defer rows.Close()
+
+		bar := pb.Full.Start(int(idCount)).SetMaxWidth(maxBarWidth)
+
+		for rows.Next() {
+			var id string
+			err := rows.Scan(&id)
+			if err != nil {
+				log.Warn().Err(err).Msg("failed to parse ID")
+
+				continue
+			}
+
+			bar.Increment()
+			f.bloom.Add(fasterByte(id))
+		}
+		bar.Finish()
+		log.Info().Msgf("Cached %s IDs", humanize.Comma(int64(idCount)))
 	}
 
 	return f
@@ -98,7 +109,7 @@ func (f *Factory) Shutdown() {
 // populate bucket at given index until full
 func (f *Factory) populateBucket(idx int) {
 	t := time.Now()
-	log.Info().Msgf("filling bucket %d", idx)
+	log.Info().Msgf("Filling bucket %d", idx)
 
 	fillCount := 0
 	for fillCount < f.store.capacity {
@@ -114,7 +125,7 @@ func (f *Factory) populateBucket(idx int) {
 	f.store.mutex.Lock()
 	f.store.status[idx] = BUCKET_FULL
 	f.store.mutex.Unlock()
-	log.Info().Msgf("filled bucket %d in %s", idx, time.Since(t).String())
+	log.Info().Msgf("Filled bucket %d in %s", idx, time.Since(t).String())
 }
 
 func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*protos.Bucket, error) {
