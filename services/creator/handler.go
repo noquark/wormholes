@@ -2,70 +2,32 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"wormholes/protos"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
-var ErrNoIds = errors.New("failed to get id")
-
 // Fiber route handlers for link.
 type Handler struct {
-	backend      Store
-	ingestor     *Ingestor
-	cache        *redis.Client
-	bucket       *protos.Bucket
-	bucketClient protos.BucketServiceClient
+	backend  Store
+	ingestor *Ingestor
+	cache    *redis.Client
+	reserve  *Reserve
 }
 
 func NewHandler(
 	backend Store,
 	ingestor *Ingestor,
 	cache *redis.Client,
-	bucketClient protos.BucketServiceClient,
+	reserve *Reserve,
 ) *Handler {
 	return &Handler{
 		backend,
 		ingestor,
 		cache,
-		&protos.Bucket{},
-		bucketClient,
+		reserve,
 	}
-}
-
-func (h *Handler) fetchBucket() error {
-	bucket, err := h.bucketClient.GetBucket(context.Background(), &protos.Empty{})
-	if err != nil {
-		return fmt.Errorf("grpc: failed to fetch bucket: %w", err)
-	}
-
-	h.bucket = bucket
-
-	return nil
-}
-
-func (h *Handler) getID() (string, error) {
-	if len(h.bucket.Ids) == 0 {
-		err := h.fetchBucket()
-		if err != nil {
-			log.Warn().Err(err)
-
-			return "", err
-		}
-	}
-
-	if len(h.bucket.Ids) > 0 {
-		id := h.bucket.Ids[0]
-		h.bucket.Ids = h.bucket.Ids[1:]
-
-		return id, nil
-	}
-
-	return "", ErrNoIds
 }
 
 func (h *Handler) Setup(app *fiber.App) {
@@ -88,16 +50,18 @@ type LinkCreateRequest struct {
 func (h *Handler) Create(c *fiber.Ctx) error {
 	var req LinkCreateRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Error().Err(err).Msg("error parsing request")
+		log.Error().Err(err).Msg("create: failed to parsing request")
 
 		return fiber.ErrBadRequest
 	}
 
 	var link *Link
 
-	id, err := h.getID()
+	id, err := h.reserve.GetID()
 	if err != nil {
-		return err
+		log.Error().Err(err).Msg("create: failed to get id")
+
+		return fiber.ErrInternalServerError
 	}
 
 	link = NewLink(id, req.Target, req.Tag)
