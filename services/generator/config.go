@@ -13,7 +13,7 @@ type BucketConfig struct {
 }
 
 type BloomConfig struct {
-	MaxLimit  int     `env:"MAX_LIMIT" envDefault:"1000000"`
+	MaxLimit  uint    `env:"MAX_LIMIT" envDefault:"1000000"`
 	ErrorRate float64 `env:"ERROR_RATE" envDefault:"0.0000001"`
 }
 
