@@ -6,6 +6,7 @@ import (
 	"wormholes/internal/header"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/rs/zerolog"
@@ -19,9 +20,9 @@ func main() {
 
 	db := conf.Postgres.Connect()
 	tsdb := conf.Timescale.Connect()
-	cache := conf.Redis.Connect()
+	redis := conf.Redis.Connect()
 	pipe := NewPipe(conf, tsdb).Start().Wait()
-	handler := NewHandler(pipe, db, cache)
+	handler := NewHandler(pipe, db, redis)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
@@ -38,6 +39,7 @@ func main() {
 
 	app.Use(etag.New())
 	app.Use(recover.New())
+	app.Use(cache.New())
 
 	app.Get("/:id", handler.Redirect)
 
