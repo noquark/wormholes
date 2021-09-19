@@ -2,50 +2,32 @@
   <img width="400" alt="wormholes" src="https://user-images.githubusercontent.com/4941333/133881817-fa6a13d2-2198-445c-b98e-7754a44d2c23.png" /><br />
   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/mohitsinghs/wormholes/docker?logo=github&style=flat-square">
   <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/mohitsinghs/wormholes?style=flat-square">
-<img alt="GitHub" src="https://img.shields.io/github/license/mohitsinghs/wormholes?logo=gnu&style=flat-square">
+  <img alt="GitHub" src="https://img.shields.io/github/license/mohitsinghs/wormholes?logo=gnu&style=flat-square">
 </p>
 <br />
 
-## Setting Up
+## Features
 
-Until I figure out Docker and K8s config, you can test this with [wh-scripts](https://github.com/mohitsinghs/wh-scripts).
+- Fail Safe
+- Scalable and Distributed
+- Highly Customizable
+- High Performance
+- API Access
 
-## Customizing
+## Why ?
 
-All three services are highly customizable with environment variables. The default values are there to make them work on my local setup, for production these needs modifications.
+There are a lot of link-shorteners out there, open-source and commercial. they provide easy access to resources in diverse fields. It's an easy problem to solve until it's not.
 
-### Director
+When I witnessed how a quick in-house implementation can cost a business and will refuse to scale, I was curious on how to scale these reliably. When a quick lookup didn't help me find any solution, I decided to write my own. I've detailed about this [here](https://mohitsingh.in/code/building-a-link-shortner) and [here](https://mohitsingh.in/code/a-distributed-link-shortner).
 
-| Name          | Purpose                             |                                                Default |
-| ------------- | ----------------------------------- | -----------------------------------------------------: |
-| `PORT`        | The port to run                     |                                                 `5000` |
-| `BATCH_SIZE`  | Size of batch when ingesting events |                                                `10000` |
-| `STREAM`      | Number of streams to ingest events  |                                                    `8` |
-| `PG_URI`      | URI for connecting to PostgreSQL    | `postgres://postgres:postgres@localhost:5432/postgres` |
-| `PG_MAX_CONN` | Maximum connections for PostgreSQL  |                                                 `5000` |
-| `REDIS_URI`   | URI for connecting to Redis         |                      `redis://:redis@localhost:6379/0` |
-| `TS_URI`      | URI for connecting to TimescaleDB   | `postgres://postgres:postgres@localhost:5433/postgres` |
+## Getting started
 
-### Generator
+Everything required to get started with Wormholes is in [wiki](https://github.com/mohitsinghs/wormholes/wiki).
 
-| Name              | Purpose                                   |                                                Default |
-| ----------------- | ----------------------------------------- | -----------------------------------------------------: |
-| `PORT`            | The port to run                           |                                                 `5001` |
-| `ID_SIZE`         | Size of generated IDs                     |                                                    `7` |
-| `MAX_LIMIT`       | Limit of IDs to be stored                 |                                              `1000000` |
-| `ERROR_RATE`      | Rate of false positives in bloom filter   |                                            `0.0000001` |
-| `BUCKET_SIZE`     | Number of buckets to store IDs            |                                                   `8 ` |
-| `BUCKET_CAPACITY` | Number of IDs to store in a single bucket |                                              `100000 ` |
-| `PG_URI`          | URI for connecting to PostgreSQL          | `postgres://postgres:postgres@localhost:5432/postgres` |
-| `PG_MAX_CONN`     | Maximum connections for PostgreSQL        |                                                 `5000` |
+## Behind the name
 
-### Creator
+Wormholes are tunnels made by earthworms and a link between two disparate points in spacetime. Short links are essentially a links to digital thing. This project is inspired by both and hence named after them.
 
-| Name          | Purpose                            |                                                Default |
-| ------------- | ---------------------------------- | -----------------------------------------------------: |
-| `PORT`        | The port to run                    |                                                 `5002` |
-| `GEN_ADDR`    | Address of generator instance      |                                       `localhost:5001` |
-| `BATCH_SIZE`  | Size of batch when ingesting links |                                                `10000` |
-| `PG_URI`      | URI for connecting to PostgreSQL   | `postgres://postgres:postgres@localhost:5432/postgres` |
-| `PG_MAX_CONN` | Maximum connections for PostgreSQL |                                                 `5000` |
-| `REDIS_URI`   | URI for connecting to Redis        |                      `redis://:redis@localhost:6379/0` |
+## Having problems ?
+
+Feel free to open an issue or feature request. I'll try to help you as long as you really care about open source and are being reasonable.
