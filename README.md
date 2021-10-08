@@ -18,7 +18,7 @@
 
 There are a lot of link-shorteners out there, open-source and commercial. they provide easy access to resources in diverse fields. It's an easy problem to solve until it's not.
 
-When I witnessed how a quick in-house implementation can cost a business and will refuse to scale, I was curious on how to scale these reliably. When a quick lookup didn't help me find any solution, I decided to write my own. I've detailed about this [here](https://mohitsingh.in/code/building-a-link-shortner) and [here](https://mohitsingh.in/code/a-distributed-link-shortner).
+When I witnessed how a quick in-house implementation can cost a business and will refuse to scale, I was curious on how to scale these reliably. When a quick lookup didn't help me find any solution, I decided to write my own. I've detailed about this [here](https://mohitsingh.in/building-a-link-shortner) and [here](https://mohitsingh.in/a-distributed-link-shortner).
 
 ## Getting started
 
