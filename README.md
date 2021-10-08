@@ -1,5 +1,5 @@
+<h1 align="center">wormholes</h1>
 <p align='center'>
-  <img width="400" alt="wormholes" src="https://user-images.githubusercontent.com/4941333/133881817-fa6a13d2-2198-445c-b98e-7754a44d2c23.png" /><br />
   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/mohitsinghs/wormholes/docker?logo=github&style=flat-square">
   <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/mohitsinghs/wormholes?style=flat-square">
   <img alt="GitHub" src="https://img.shields.io/github/license/mohitsinghs/wormholes?logo=gnu&style=flat-square">
