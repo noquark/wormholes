@@ -1,4 +1,4 @@
-package main
+package creator
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -26,7 +27,7 @@ type Reserve struct {
 }
 
 func NewReserve(addr string) *Reserve {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		log.Error().Err(err).Msg("reserve: grpc failed to connect")
 	}

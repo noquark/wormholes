@@ -1,4 +1,4 @@
-package main
+package director
 
 import (
 	"wormholes/internal/db"

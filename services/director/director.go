@@ -1,21 +1,17 @@
-package main
+package director
 
 import (
 	"fmt"
-	"os"
 	"wormholes/internal/header"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-func main() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+func Run() {
 	conf := DefaultConfig()
 
 	db := conf.Postgres.Connect()

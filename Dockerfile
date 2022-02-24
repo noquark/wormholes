@@ -7,24 +7,11 @@ WORKDIR /go/src/wormholes
 COPY go.* .
 RUN go mod download
 COPY . .
-RUN go build -a -installsuffix cgo ./services/director
-RUN go build -a -installsuffix cgo ./services/generator
-RUN go build -a -installsuffix cgo ./services/creator
+RUN go build -a -installsuffix cgo .
 
-FROM alpine:latest as director
-RUN apk --no-cache add ca-certificates
-COPY --from=compiler /go/src/wormholes/director /
-EXPOSE 5000
-CMD /director
-
-FROM alpine:latest as generator
-RUN apk --no-cache add ca-certificates
-COPY --from=compiler /go/src/wormholes/generator /
-EXPOSE 5001
-CMD /generator
-
-FROM alpine:latest as creator
-RUN apk --no-cache add ca-certificates
-COPY --from=compiler /go/src/wormholes/creator /
-EXPOSE 5002
-CMD /creator
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates dumb-init
+COPY --from=compiler /go/src/wormholes/wormholes /
+EXPOSE 5000 5001 5002
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD [ "wormholes" ]
