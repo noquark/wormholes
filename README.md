@@ -162,9 +162,9 @@ git clone https://github.com/mohitsinghs/wormholes
 cd wormholes
 
 # run services
-go run ./service/generator
-go run ./service/creator
-go run ./service/director
+go run . -as generator
+go run . -as creator
+go run . -as director
 ```
 
 ### 7. Load Testing

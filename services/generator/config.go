@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"wormholes/internal/db"
@@ -8,12 +8,12 @@ import (
 )
 
 type BucketConfig struct {
-	Size     int `env:"BUCKET_SIZE" envDefault:"8"`
+	Size     int `env:"BUCKET_SIZE" envDefault:"16"`
 	Capacity int `env:"BUCKET_CAPACITY" envDefault:"100000"`
 }
 
 type BloomConfig struct {
-	MaxLimit  uint    `env:"MAX_LIMIT" envDefault:"1000000"`
+	MaxLimit  uint    `env:"MAX_LIMIT" envDefault:"100000000"`
 	ErrorRate float64 `env:"ERROR_RATE" envDefault:"0.0000001"`
 }
 

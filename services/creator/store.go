@@ -1,4 +1,4 @@
-package main
+package creator
 
 type Store interface {
 	Get(id string) (*Link, error)

@@ -1,4 +1,4 @@
-package main
+package director
 
 type Link struct {
 	ID     string `json:"id" redis:"id"`

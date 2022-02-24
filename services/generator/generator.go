@@ -1,22 +1,18 @@
-package main
+package generator
 
 import (
 	"fmt"
 	"net"
-	"os"
 	"wormholes/internal/header"
 	"wormholes/protos"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 )
 
-func main() {
+func Run() {
 	header.Show("Generator")
 
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	conf := DefaultConfig()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", conf.Port))

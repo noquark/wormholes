@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"context"
@@ -49,6 +49,7 @@ func NewFactory(config *Config) *Factory {
 
 func (f *Factory) Prepare() *Factory {
 	var idCount uint64
+
 	err := f.db.QueryRow(context.Background(), queryIDsCount).Scan(&idCount)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to get IDs count")
@@ -58,6 +59,7 @@ func (f *Factory) Prepare() *Factory {
 		rows, err := f.db.Query(context.Background(), queryIDs)
 		if err != nil {
 			log.Warn().Err(err).Msg("failed to get IDs")
+
 			return f
 		}
 		defer rows.Close()
@@ -66,6 +68,7 @@ func (f *Factory) Prepare() *Factory {
 
 		for rows.Next() {
 			var id string
+
 			err := rows.Scan(&id)
 			if err != nil {
 				log.Warn().Err(err).Msg("failed to parse ID")
@@ -92,13 +95,14 @@ func (f *Factory) Run() *Factory {
 					for _, idx := range emptyBuckets {
 						f.store.mutex.Lock()
 						go f.populateBucket(idx)
-						f.store.status[idx] = BUCKET_BUSY
+						f.store.status[idx] = BucketBusy
 						f.store.mutex.Unlock()
 					}
 				}
 			}
 		}
 	}()
+
 	return f
 }
 
@@ -106,9 +110,10 @@ func (f *Factory) Shutdown() {
 	f.tick.Stop()
 }
 
-// populate bucket at given index until full
+// populate bucket at given index until full.
 func (f *Factory) populateBucket(idx int) {
 	t := time.Now()
+
 	log.Info().Msgf("Filling bucket %d", idx)
 
 	fillCount := 0
@@ -123,7 +128,7 @@ func (f *Factory) populateBucket(idx int) {
 		}
 	}
 	f.store.mutex.Lock()
-	f.store.status[idx] = BUCKET_FULL
+	f.store.status[idx] = BucketFull
 	f.store.mutex.Unlock()
 	log.Info().Msgf("Filled bucket %d in %s", idx, time.Since(t).String())
 }
@@ -133,6 +138,7 @@ func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*prot
 	if len(ids) == 0 {
 		return nil, ErrFactoryEmpty
 	}
+
 	return &protos.Bucket{
 		Ids: ids,
 	}, nil
