@@ -1,8 +1,9 @@
 <h1 align="center">wormholes</h1>
 <p align='center'>
-  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/mohitsinghs/wormholes/docker?logo=github&style=flat-square">
-  <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/mohitsinghs/wormholes?style=flat-square">
-  <img alt="GitHub" src="https://img.shields.io/github/license/mohitsinghs/wormholes?logo=gnu&style=flat-square">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/mohitsinghs/wormholes/docker?logo=github&style=for-the-badge" />
+  <img alt="Go Report Card" src="https://img.shields.io/badge/go%20report-A-green.svg?style=for-the-badge&logo=go&logoColor=white" />
+  <img alt="GitHub" src="https://img.shields.io/github/license/mohitsinghs/wormholes?logo=gnu&style=for-the-badge" />
+  <img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/mohitsinghs/wormholes?logo=go&logoColor=white&style=for-the-badge" />
 </p>
 <br />
 
