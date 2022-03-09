@@ -24,8 +24,6 @@ When I witnessed how a quick in-house implementation can cost a business and wil
 
 Although, a better approach will be to run wormholes on docker or kubernetes, For now, let's test if this works by running databases and cache on docker and wormholes services on our machine &mdash;
 
-### 1. Running Databases
-
 Test configs are inside `deploy/conf`. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/).
 
 ```sh
@@ -42,12 +40,6 @@ Run postgres, timescale and redis now -
 
 Now you should have all three running in docker containers.
 
-### 2. Preparing wrk
-
-Install [wrk](https://github.com/wg/wrk) in your system. We will be using this to test our setup.
-
-### 3. Running
-
 Finally run generator followed by director and creator
 
 ```sh
@@ -62,7 +54,9 @@ go build .
 ./wormholes -as director
 ```
 
-### 4 Load Testing
+## Load Testing
+
+Make sure everything is running and accessible. Now, install [wrk](https://github.com/wg/wrk) in your system. We will be using this to load test our setup.
 
 ```sh
 # load test link creation
