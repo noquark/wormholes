@@ -4,27 +4,26 @@ import (
 	"fmt"
 	"wormholes/internal/header"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
-func Run() {
+func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, redis *redis.Client) {
 	conf := DefaultConfig()
 
-	db := conf.Postgres.Connect()
-	tsdb := conf.Timescale.Connect()
-	redis := conf.Redis.Connect()
-	pipe := NewPipe(conf, tsdb).Start().Wait()
-	handler := NewHandler(pipe, db, redis)
+	pipe := NewPipe(conf, ts).Start().Wait()
+	handler := NewHandler(pipe, pg, redis)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
 		EnableTrustedProxyCheck: true,
 		Prefork:                 true,
-		ServerHeader:            "wormholes-director",
+		ServerHeader:            "wormholes",
 	})
 
 	if !fiber.IsChild() {

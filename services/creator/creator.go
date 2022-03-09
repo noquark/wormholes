@@ -4,31 +4,28 @@ import (
 	"fmt"
 	"wormholes/internal/header"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
-func Run() {
+func Run(pg *pgxpool.Pool, redis *redis.Client) {
 	conf := DefaultConfig()
+	store := NewPgStore(pg)
 
-	var store Store
-
-	pool := conf.Postgres.Connect()
-	store = NewPgStore(pool)
-
-	ingestor := NewIngestor(pool, conf.BatchSize).Start()
-	cache := conf.Redis.Connect()
+	ingestor := NewIngestor(pg, conf.BatchSize).Start()
 	reserve := NewReserve(conf.GenAddr)
 
-	handler := NewHandler(store, ingestor, cache, reserve)
+	handler := NewHandler(store, ingestor, redis, reserve)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
 		EnableTrustedProxyCheck: true,
 		Prefork:                 true,
-		ServerHeader:            "wormholes-creator",
+		ServerHeader:            "wormholes",
 	})
 
 	if !fiber.IsChild() {
@@ -43,6 +40,6 @@ func Run() {
 	handler.Setup(app)
 
 	if err := app.Listen(fmt.Sprintf(":%d", conf.Port)); err != nil {
-		log.Error().Err(err).Msg("error starting server")
+		log.Error().Err(err).Msg("failed to start server")
 	}
 }

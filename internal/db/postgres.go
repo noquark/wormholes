@@ -2,10 +2,14 @@ package db
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog/log"
 )
+
+//go:embed sql/postgres.sql
+var pgSchema string
 
 // Config for PostgreSQL.
 type Postgres struct {
@@ -16,7 +20,7 @@ type Postgres struct {
 func (db *Postgres) Connect() *pgxpool.Pool {
 	config, err := pgxpool.ParseConfig(db.URI)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Unable to connect to postgres")
+		log.Fatal().Err(err).Msg("postgres: failed to parse config")
 	}
 
 	config.MaxConns = db.MaxConns
@@ -29,4 +33,11 @@ func (db *Postgres) Connect() *pgxpool.Pool {
 	}
 
 	return dbpool
+}
+
+func InitPg(db *pgxpool.Pool) {
+	_, err := db.Exec(context.Background(), pgSchema)
+	if err != nil {
+		log.Fatal().Err(err).Msg("postgres: failed to create required tables")
+	}
 }
