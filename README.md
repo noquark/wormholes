@@ -22,23 +22,26 @@ When I witnessed how a quick in-house implementation can cost a business and wil
 
 ## Getting started
 
-Although, a better approach will be to run wormholes on docker or kubernetes, For now, let's test if this works by running databases and cache on docker and wormholes services on our machine &mdash;
+### Run databases
 
-Test configs are inside `deploy/conf`. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/).
-
-```sh
-deploy/conf
-├── postgres.conf
-└── redis.conf
-```
-
-Run postgres, timescale and redis now -
+Test config for redis and postgres are inside `deploy/conf`. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/). Run postgres, timescale and redis now &mdash;
 
 ```sh
 ./deploy/start_db.sh
 ```
 
-Now you should have all three running in docker containers.
+After this, you should have three running in docker containers.
+
+### Run with docker
+
+```sh
+docker run -d --network host --name generator ghcr.io/mohitsinghs/wormholes:latest
+docker run -d --network host --name director ghcr.io/mohitsinghs/wormholes:latest ./wormholes -as director
+docker run -d --network host --name creator ghcr.io/mohitsinghs/wormholes:latest ./wormholes -as creator
+
+```
+
+### Or, Run manually
 
 Finally run generator followed by director and creator
 
