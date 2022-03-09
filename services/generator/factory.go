@@ -22,7 +22,7 @@ const (
 	maxBarWidth          = 64
 )
 
-var ErrFactoryEmpty = status.New(codes.ResourceExhausted, "factory is empty").Err()
+var ErrFactoryEmpty = status.New(codes.ResourceExhausted, "factory: it's empty here").Err()
 
 // An ID generation factory made of -
 //  - A db connection for loading IDs on startup
@@ -37,11 +37,11 @@ type Factory struct {
 	tick  *time.Ticker
 }
 
-func NewFactory(config *Config) *Factory {
+func NewFactory(config *Config, db *pgxpool.Pool) *Factory {
 	return &Factory{
-		db:    config.Postgres.Connect(),
-		bloom: NewBloom(config.MaxLimit, config.ErrorRate),
-		store: NewMemStore(config.Size, config.Capacity),
+		db:    db,
+		bloom: NewBloom(config.BloomMaxLimit, config.BloomErrorRate),
+		store: NewMemStore(config.BucketSize, config.BucketCapacity),
 		size:  config.IDSize,
 		tick:  time.NewTicker(time.Second),
 	}
@@ -52,13 +52,13 @@ func (f *Factory) Prepare() *Factory {
 
 	err := f.db.QueryRow(context.Background(), queryIDsCount).Scan(&idCount)
 	if err != nil {
-		log.Warn().Err(err).Msg("failed to get IDs count")
+		log.Warn().Err(err).Msg("factory: failed to get IDs count")
 	}
 
 	if idCount > 0 {
 		rows, err := f.db.Query(context.Background(), queryIDs)
 		if err != nil {
-			log.Warn().Err(err).Msg("failed to get IDs")
+			log.Warn().Err(err).Msg("factory: failed to get IDs")
 
 			return f
 		}
@@ -71,7 +71,7 @@ func (f *Factory) Prepare() *Factory {
 
 			err := rows.Scan(&id)
 			if err != nil {
-				log.Warn().Err(err).Msg("failed to parse ID")
+				log.Warn().Err(err).Msg("factory: failed to parse ID")
 
 				continue
 			}
@@ -80,7 +80,7 @@ func (f *Factory) Prepare() *Factory {
 			f.bloom.Add(fasterByte(id))
 		}
 		bar.Finish()
-		log.Info().Msgf("Cached %s IDs", humanize.Comma(int64(idCount)))
+		log.Info().Msgf("factory: cached %s IDs", humanize.Comma(int64(idCount)))
 	}
 
 	return f
@@ -114,7 +114,7 @@ func (f *Factory) Shutdown() {
 func (f *Factory) populateBucket(idx int) {
 	t := time.Now()
 
-	log.Info().Msgf("Filling bucket %d", idx)
+	log.Info().Msgf("factory: filling bucket %d", idx)
 
 	fillCount := 0
 	for fillCount < f.store.capacity {
@@ -130,7 +130,7 @@ func (f *Factory) populateBucket(idx int) {
 	f.store.mutex.Lock()
 	f.store.status[idx] = BucketFull
 	f.store.mutex.Unlock()
-	log.Info().Msgf("Filled bucket %d in %s", idx, time.Since(t).String())
+	log.Info().Msgf("factory: filled bucket %d in %s", idx, time.Since(t).String())
 }
 
 func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*protos.Bucket, error) {

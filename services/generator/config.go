@@ -1,28 +1,17 @@
 package generator
 
 import (
-	"wormholes/internal/db"
-
 	"github.com/caarlos0/env/v6"
 	"github.com/rs/zerolog/log"
 )
 
-type BucketConfig struct {
-	Size     int `env:"BUCKET_SIZE" envDefault:"16"`
-	Capacity int `env:"BUCKET_CAPACITY" envDefault:"100000"`
-}
-
-type BloomConfig struct {
-	MaxLimit  uint    `env:"MAX_LIMIT" envDefault:"100000000"`
-	ErrorRate float64 `env:"ERROR_RATE" envDefault:"0.0000001"`
-}
-
 type Config struct {
-	Port   int `env:"PORT" envDefault:"5001"`
-	IDSize int `env:"ID_SIZE" envDefault:"7"`
-	BloomConfig
-	BucketConfig
-	db.Postgres
+	Port           int     `env:"PORT" envDefault:"5001"`
+	IDSize         int     `env:"ID_SIZE" envDefault:"7"`
+	BucketSize     int     `env:"BUCKET_SIZE" envDefault:"16"`
+	BucketCapacity int     `env:"BUCKET_CAP" envDefault:"100000"`
+	BloomMaxLimit  uint    `env:"BLOOM_MAX" envDefault:"100000000"`
+	BloomErrorRate float64 `env:"BLOOM_ERROR" envDefault:"0.0000001"`
 }
 
 func DefaultConfig() *Config {
