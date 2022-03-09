@@ -3,6 +3,7 @@ package director
 import (
 	"context"
 	_ "embed"
+	"reflect"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -45,7 +46,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 	var link Link
 
 	err := h.cache.HGetAll(context.Background(), id).Scan(&link)
-	if err != nil {
+	if err != nil || reflect.ValueOf(link).IsZero() {
 		log.Err(err).Msg("redirect: cache miss")
 
 		// If key does not exists, query db
@@ -61,7 +62,10 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 			return fiber.ErrInternalServerError
 		}
 
-		_ = h.cache.HSet(context.Background(), id, link).Err()
+		err = h.cache.HSet(context.Background(), id, "id", link.ID, "target", link.Target, "tag", link.Tag).Err()
+		if err != nil {
+			log.Warn().Err(err).Msg("redirect: failed to cache")
+		}
 	}
 
 	var cookie string

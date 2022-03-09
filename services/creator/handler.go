@@ -2,6 +2,7 @@ package creator
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -98,21 +99,25 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 
 	var link Link
 
-	ctx := context.Background()
-
-	err := h.cache.HGetAll(ctx, id).Scan(&link)
-	if err != nil {
+	err := h.cache.HGetAll(context.Background(), id).Scan(&link)
+	if err != nil || reflect.ValueOf(link).IsZero() {
 		log.Err(err).Msg("get: cache miss")
 
 		// If key does not exists, query db
-		link, err := h.backend.Get(id)
+		link, err = h.backend.Get(id)
+
 		if err != nil {
 			log.Error().Err(err).Msg("get: error getting link")
 
 			return fiber.ErrBadRequest
 		}
 
-		_ = h.cache.HSet(ctx, id, link).Err()
+		err = h.cache.HSet(context.Background(), id, "id", link.ID, "target", link.Target, "tag", link.Tag).Err()
+		if err != nil {
+			log.Warn().Err(err).Msg("get: failed to cache")
+		}
+
+		return c.Status(fiber.StatusOK).JSON(link)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(link)

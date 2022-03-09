@@ -29,7 +29,7 @@ func NewPgStore(pool *pgxpool.Pool) *PgStore {
 	}
 }
 
-func (p *PgStore) Get(id string) (*Link, error) {
+func (p *PgStore) Get(id string) (Link, error) {
 	var link Link
 
 	rows := p.db.QueryRow(context.Background(),
@@ -39,10 +39,10 @@ func (p *PgStore) Get(id string) (*Link, error) {
 
 	err := rows.Scan(&link.ID, &link.Target, &link.Tag)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve link: %w", err)
+		return Link{}, fmt.Errorf("failed to retrieve link: %w", err)
 	}
 
-	return &link, nil
+	return link, nil
 }
 
 func (p *PgStore) Update(link *Link) error {
