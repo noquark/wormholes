@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-//go:embed sql/postgres.sql
+//go:embed sql/timescale.sql
 var tsSchema string
 
 // Config for TimescaleDB.
