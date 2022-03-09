@@ -14,4 +14,4 @@ RUN apk --no-cache add ca-certificates dumb-init
 COPY --from=compiler /go/src/wormholes/wormholes /
 EXPOSE 5000 5001 5002
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD [ "wormholes" ]
+CMD [ "/wormholes" ]
