@@ -7,14 +7,6 @@
 </p>
 <br />
 
-## Features
-
-- Fail Safe
-- Scalable and Distributed
-- Highly Customizable
-- High Performance
-- API Access
-
 ## Why ?
 
 There are a lot of link-shorteners out there, open-source and commercial. they provide easy access to resources in diverse fields and it's an easy problem to solve until it's not.
