@@ -144,6 +144,15 @@ func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*prot
 	}, nil
 }
 
+func (f *Factory) GetLocalBucket() ([]string, error) {
+	ids := f.store.Pop()
+	if len(ids) == 0 {
+		return nil, ErrFactoryEmpty
+	}
+
+	return ids, nil
+}
+
 func fasterByte(s string) []byte {
 	return unsafe.Slice(
 		(*byte)(unsafe.Pointer(

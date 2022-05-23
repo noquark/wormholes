@@ -3,6 +3,7 @@ package creator
 import (
 	"fmt"
 	"wormholes/internal/header"
+	"wormholes/services/creator/reserve"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -17,7 +18,7 @@ func Run(pg *pgxpool.Pool, redis *redis.Client) {
 	store := NewPgStore(pg)
 
 	ingestor := NewIngestor(pg, conf.BatchSize).Start()
-	reserve := NewReserve(conf.GenAddr)
+	reserve := reserve.WithGrpc(conf.GenAddr)
 
 	handler := NewHandler(store, ingestor, redis, reserve)
 
