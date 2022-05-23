@@ -9,8 +9,8 @@
 
 ## Why ?
 
-There are a lot of link-shorteners out there, open-source and commercial. they provide easy access to resources in diverse fields and it's an easy problem to solve until it's not.
-When I witnessed how a quick in-house implementation can cost a business and will refuse to scale, I was curious on how to scale these reliably. When a quick lookup didn't help me find any solution, I decided to write my own. I've detailed about this [here](https://mohitsingh.in/building-a-link-shortner) and [here](https://mohitsingh.in/a-distributed-link-shortner).
+A lot of link-shorteners are out there, open-source and commercial. they provide access to resources in diverse fields and it's a trivial problem to solve until it's not.
+When I learned how a quick in-house implementation can cost a business and will refuse to scale, I was curious on how to scale these reliably. When a quick lookup didn't help me find any solution, I decided to write my own. I've detailed about this [here](https://mohitsingh.in/code/building-a-link-shortner) and [here](https://mohitsingh.in/code/a-distributed-link-shortner).
 
 ## Getting started
 
@@ -35,7 +35,7 @@ docker run -d --network host --name creator ghcr.io/mohitsinghs/wormholes:latest
 
 ### Or, Run manually
 
-Finally run generator followed by director and creator
+Run generator followed by director and creator
 
 ```sh
 # clone repository
@@ -72,14 +72,14 @@ Wormholes are highly customizable with environment variables. The default values
 | `BATCH_SIZE`  | Size of batch when ingesting events       |                                                 `10000` |
 | `STREAMS`     | Number of streams to ingest events        |                                                     `8` |
 | `ID_SIZE`     | Size of generated IDs                     |                                                     `7` |
-| `BLOOM_MAX`   | Limit of IDs to be stored                 |                                               `1000000` |
+| `BLOOM_MAX`   | Limit of IDs to store                     |                                               `1000000` |
 | `BLOOM_ERROR` | Rate of false positives in bloom filter   |                                             `0.0000001` |
 | `BUCKET_SIZE` | Number of buckets to store IDs            |                                                     `8` |
 | `BUCKET_CAP`  | Number of IDs to store in a single bucket |                                               `100000 ` |
 | `GEN_ADDR`    | Address of generator instance             |                                        `localhost:5001` |
 | `TS_URI`      | URI for connecting to TimescaleDB         |  `postgres://postgres:postgres@localhost:5433/postgres` |
 | `PG_URI`      | URI for connecting to PostgreSQL          |  `postgres://postgres:postgres@localhost:5432/postgres` |
-| `PG_MAX_CONN` | Maximum connections for PostgreSQL        |                                                  `5000` |
+| `PG_MAX_CONN` | Max connections for PostgreSQL            |                                                  `5000` |
 | `REDIS_URI`   | URI for connecting to Redis               |                       `redis://:redis@localhost:6379/0` |
 
 ## Behind the name
