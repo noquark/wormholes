@@ -8,7 +8,7 @@ require (
 	github.com/cheggaaa/pb/v3 v3.0.8
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/gofiber/fiber/v2 v2.33.0
+	github.com/gofiber/fiber/v2 v2.34.0
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/mohitsinghs/nanoid v0.0.0-20220209044556-ebf36a9c3eaa
 	github.com/mssola/user_agent v0.5.3
@@ -40,7 +40,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.36.0 // indirect
+	github.com/valyala/fasthttp v1.37.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20220513210258-46612604a0f9 // indirect
 	golang.org/x/net v0.0.0-20220513224357-95641704303c // indirect
