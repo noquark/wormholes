@@ -1,4 +1,4 @@
-package creator
+package reserve
 
 import (
 	"context"
@@ -15,10 +15,10 @@ import (
 var (
 	// backoff time is 500ms by default.
 	backoffTime = time.Millisecond * 5e2
-	ErrNoIds    = errors.New("reserve: there are no IDs ready yet")
+	ErrNoIds    = errors.New("grcp-reserve: there are no IDs ready yet")
 )
 
-type Reserve struct {
+type GrpcReserve struct {
 	mutex  sync.RWMutex
 	status Status
 	bucket *protos.Bucket
@@ -26,15 +26,15 @@ type Reserve struct {
 	client protos.BucketServiceClient
 }
 
-func NewReserve(addr string) *Reserve {
+func WithGrpc(addr string) *GrpcReserve {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
-		log.Error().Err(err).Msg("reserve: grpc failed to connect")
+		log.Error().Err(err).Msg("grpc-reserve: grpc failed to connect")
 	}
 
 	client := protos.NewBucketServiceClient(conn)
 
-	return &Reserve{
+	return &GrpcReserve{
 		mutex:  sync.RWMutex{},
 		status: *NewStatus(),
 		bucket: &protos.Bucket{},
@@ -43,11 +43,11 @@ func NewReserve(addr string) *Reserve {
 	}
 }
 
-func (r *Reserve) isEmpty() bool {
+func (r *GrpcReserve) isEmpty() bool {
 	return len(r.bucket.Ids) == 0
 }
 
-func (r *Reserve) fetch() {
+func (r *GrpcReserve) fetch() {
 	if r.status.IsBusy() {
 		return
 	}
@@ -57,7 +57,7 @@ func (r *Reserve) fetch() {
 
 	bucket, err := r.client.GetBucket(context.Background(), &protos.Empty{})
 	if err != nil {
-		log.Error().Err(err).Msg("reserve: grpc failed to fetch bucket")
+		log.Error().Err(err).Msg("grpc-reserve: grpc failed to fetch bucket")
 	}
 
 	if len(bucket.Ids) > 0 {
@@ -67,7 +67,7 @@ func (r *Reserve) fetch() {
 	}
 }
 
-func (r *Reserve) pop() string {
+func (r *GrpcReserve) pop() string {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	id := r.bucket.Ids[0]
@@ -76,7 +76,7 @@ func (r *Reserve) pop() string {
 	return id
 }
 
-func (r *Reserve) GetID() (string, error) {
+func (r *GrpcReserve) GetID() (string, error) {
 	if r.isEmpty() {
 		r.fetch()
 		// this delays some request instead of failing them

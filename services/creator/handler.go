@@ -3,6 +3,7 @@ package creator
 import (
 	"context"
 	"reflect"
+	"wormholes/services/creator/reserve"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -14,14 +15,14 @@ type Handler struct {
 	backend  Store
 	ingestor *Ingestor
 	cache    *redis.Client
-	reserve  *Reserve
+	reserve  reserve.Reserve
 }
 
 func NewHandler(
 	backend Store,
 	ingestor *Ingestor,
 	cache *redis.Client,
-	reserve *Reserve,
+	reserve reserve.Reserve,
 ) *Handler {
 	return &Handler{
 		backend,
@@ -31,12 +32,7 @@ func NewHandler(
 	}
 }
 
-func (h *Handler) Setup(app *fiber.App) {
-	// group routes
-	apiV1 := app.Group("/api/v1")
-	linkAPI := apiV1.Group("/links")
-
-	// link routes
+func (h *Handler) Setup(linkAPI fiber.Router) {
 	linkAPI.Get("/:id", h.Get)
 	linkAPI.Put("/", h.Create)
 	linkAPI.Post("/:id", h.Update)
