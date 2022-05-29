@@ -2,8 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"wormholes/internal/db"
+	"wormholes/internal/header"
 	"wormholes/services/creator"
 	"wormholes/services/creator/reserve"
 	"wormholes/services/director"
@@ -20,13 +22,14 @@ const (
 	Generator = "generator"
 	Creator   = "creator"
 	Director  = "director"
+	Unified   = "unified"
 )
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	as := flag.String("as", Generator, "Run wormhole as")
+	as := flag.String("as", Unified, "Run wormhole as")
 	flag.Parse()
 
 	dbConf := db.Load()
@@ -44,7 +47,7 @@ func main() {
 		creator.Run(pg, redis)
 	case Director:
 		director.Run(pg, ts, redis)
-	default:
+	case Unified:
 		genConf := generator.DefaultConfig()
 		creatorConf := creator.DefaultConfig()
 		directorConf := director.DefaultConfig()
@@ -74,7 +77,10 @@ func main() {
 		app.Use(etag.New())
 		app.Use(recover.New())
 
-		if err := app.Listen(":5000"); err != nil {
+		header.Show("Unified")
+		log.Info().Msgf("Running on port %d", directorConf.Port)
+
+		if err := app.Listen(fmt.Sprintf(":%d", directorConf.Port)); err != nil {
 			log.Error().Err(err).Msg("failed to start server")
 		}
 	}
