@@ -15,7 +15,7 @@ import (
 var (
 	// backoff time is 500ms by default.
 	backoffTime = time.Millisecond * 5e2
-	ErrNoIds    = errors.New("grcp-reserve: there are no IDs ready yet")
+	ErrNoIds    = errors.New("reserve: there are no IDs ready yet")
 )
 
 type GrpcReserve struct {
