@@ -59,7 +59,7 @@ wrk -t8 -d10s -c100 -s "./deploy/load/put.lua" http://localhost:5002/api/v1/link
 # load test link data API. Get one of shortIDs created in previous step
 wrk -t8 -d10s -c100 http://localhost:5001/api/v1/links/<shortID>
 # load test link redirection
-wrk -t8 -d10s -c100 -s  http://localhost:5000/<shortID>
+wrk -t8 -d10s -c100 http://localhost:5000/<shortID>
 ```
 
 ## Environment Variables
