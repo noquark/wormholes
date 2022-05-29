@@ -10,6 +10,7 @@ import (
 
 type LocalReserve struct {
 	mutex   sync.RWMutex
+	status  Status
 	factory *generator.Factory
 	bucket  []string
 }
@@ -17,6 +18,7 @@ type LocalReserve struct {
 func WithLocal(f *generator.Factory) *LocalReserve {
 	return &LocalReserve{
 		mutex:   sync.RWMutex{},
+		status:  *NewStatus(),
 		factory: f,
 	}
 }
@@ -26,9 +28,16 @@ func (r *LocalReserve) isEmpty() bool {
 }
 
 func (r *LocalReserve) fetch() {
+	if r.status.IsBusy() {
+		return
+	}
+
+	r.status.SetBusy()
+	defer r.status.SetIdle()
+
 	ids, err := r.factory.GetLocalBucket()
 	if len(ids) == 0 || err != nil {
-		log.Error().Err(err).Msg("local-reserve: grpc failed to fetch bucket")
+		log.Error().Err(err).Msg("local-reserve: failed to fetch bucket")
 	}
 
 	if len(ids) > 0 {
