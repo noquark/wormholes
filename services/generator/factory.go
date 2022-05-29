@@ -2,6 +2,7 @@ package generator
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"time"
 	"unsafe"
@@ -21,8 +22,6 @@ const (
 	queryIDsCount string = `SELECT count(id) from wh_links`
 	maxBarWidth          = 64
 )
-
-var ErrFactoryEmpty = status.New(codes.ResourceExhausted, "factory: it's empty here").Err()
 
 // An ID generation factory made of -
 //  - A db connection for loading IDs on startup
@@ -136,7 +135,7 @@ func (f *Factory) populateBucket(idx int) {
 func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*protos.Bucket, error) {
 	ids := f.store.Pop()
 	if len(ids) == 0 {
-		return nil, ErrFactoryEmpty
+		return nil, status.New(codes.ResourceExhausted, "factory: it's empty here").Err()
 	}
 
 	return &protos.Bucket{
@@ -147,7 +146,7 @@ func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*prot
 func (f *Factory) GetLocalBucket() ([]string, error) {
 	ids := f.store.Pop()
 	if len(ids) == 0 {
-		return nil, ErrFactoryEmpty
+		return nil, errors.New("factory: it's empty here")
 	}
 
 	return ids, nil
