@@ -7,35 +7,27 @@
 </p>
 <br />
 
-## Why ?
+## Why wormholes ?
 
-A lot of link-shorteners are out there, open-source and commercial. they provide access to resources in diverse fields and it's a trivial problem to solve until it's not.
-When I learned how a quick in-house implementation can cost a business and will refuse to scale, I was curious on how to scale these reliably. When a quick lookup didn't help me find any solution, I decided to write my own. I've detailed about this [here](https://mohitsingh.in/code/building-a-link-shortner) and [here](https://mohitsingh.in/code/a-distributed-link-shortner).
+I was curious on how to scale link-shortners reliably and decided to write one. More details on this in my blog posts [here](https://mohitsingh.in/code/building-a-link-shortner) and [here](https://mohitsingh.in/code/a-distributed-link-shortner).
 
-## Getting started
+## Getting Started
 
-### Run databases
-
-Test config for redis and postgres are inside `deploy/conf`. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/). Run postgres, timescale and redis now &mdash;
+1. Default database configs are inside `deploy/conf`. Verify those.
+2. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/).
+3. Run postgres, timescale and redis now &mdash;
 
 ```sh
 ./deploy/start_db.sh
 ```
 
-After this, you should have three running in docker containers.
-
-### Run with docker
+4. Run wormholes with docker
 
 ```sh
 docker run -d --network host --name generator ghcr.io/mohitsinghs/wormholes:latest
-docker run -d --network host --name director ghcr.io/mohitsinghs/wormholes:latest ./wormholes -as director
-docker run -d --network host --name creator ghcr.io/mohitsinghs/wormholes:latest ./wormholes -as creator
-
 ```
 
-### Or, Run manually
-
-Run generator followed by director and creator
+Or, build and run the binary yourself
 
 ```sh
 # clone repository
@@ -43,32 +35,25 @@ git clone https://github.com/mohitsinghs/wormholes
 cd wormholes
 # build binary
 go build .
-# run all three services
-./wormholes -as generator
-./wormholes -as creator
-./wormholes -as director
+# run unified
+./wormholes
 ```
 
-## Load Testing
+## Using in production
 
-Make sure everything is running and accessible. Now, install [wrk](https://github.com/wg/wrk) in your system. We will be using this to load test our setup.
-
-```sh
-# load test link creation
-wrk -t8 -d10s -c100 -s "./deploy/load/put.lua" http://localhost:5002/api/v1/links
-# load test link data API. Get one of shortIDs created in previous step
-wrk -t8 -d10s -c100 http://localhost:5001/api/v1/links/<shortID>
-# load test link redirection
-wrk -t8 -d10s -c100 http://localhost:5000/<shortID>
-```
+You can run instances of postgres, timescale and redis inside docker. You can also start each of generator, creator and director independently using same image with different `-as` flag. This allows you to scale creator and director as per your needs.
 
 ## Environment Variables
 
-Wormholes are highly customizable with environment variables. The default values are there to make them work on my local setup, for production these needs modifications. Following are the environment variables and there usage &mdash;
+Wormholes is highly customizable with environment variables. The default values are there to make them work on local setup, for production these needs modifications.
+
+Following are the environment variables and there usage &mdash;
+
+1. For distributed setup
 
 | Name          | Purpose                                   |                                           Default Value |
 | ------------- | ----------------------------------------- | ------------------------------------------------------: |
-| `PORT`        | The port to run                           | `5000` (director), `5001` (generator), `5002` (creator) |
+| `PORT`        | The port to run (`5000` when unified)     | `5000` (director), `5001` (generator), `5002` (creator) |
 | `BATCH_SIZE`  | Size of batch when ingesting events       |                                                 `10000` |
 | `STREAMS`     | Number of streams to ingest events        |                                                     `8` |
 | `ID_SIZE`     | Size of generated IDs                     |                                                     `7` |
@@ -82,10 +67,50 @@ Wormholes are highly customizable with environment variables. The default values
 | `PG_MAX_CONN` | Max connections for PostgreSQL            |                                                  `5000` |
 | `REDIS_URI`   | URI for connecting to Redis               |                       `redis://:redis@localhost:6379/0` |
 
-## Behind the name
+2. For unified setup
 
-Wormholes are tunnels made by earthworms and a link between two disparate points in spacetime. Short links are essentially a links to digital thing. This project is inspired by both and hence named after them.
+| Name          | Purpose                                   |             Default Value |
+| ------------- | ----------------------------------------- | ------------------------: |
+| `PORT`        | The port to run                           |                    `5000` |
+| `BATCH_SIZE`  | Size of batch when ingesting events       |                   `10000` |
+| `STREAMS`     | Number of streams to ingest events        |                       `8` |
+| `ID_SIZE`     | Size of generated IDs                     |                       `7` |
+| `BLOOM_MAX`   | Limit of IDs to store                     |                 `1000000` |
+| `BLOOM_ERROR` | Rate of false positives in bloom filter   |               `0.0000001` |
+| `BUCKET_SIZE` | Number of buckets to store IDs            |                       `8` |
+| `BUCKET_CAP`  | Number of IDs to store in a single bucket |                 `100000 ` |
+| `TS_URI`      | URI for connecting to TimescaleDB         | same as distributed setup |
+| `PG_URI`      | URI for connecting to PostgreSQL          | same as distributed setup |
+| `PG_MAX_CONN` | Max connections for PostgreSQL            |                    `5000` |
+| `REDIS_URI`   | URI for connecting to Redis               | same as distributed setup |
 
-## Having problems ?
+## Load Testing with wrk
 
-Feel free to open an issue or feature request. I'll try to help you as long as you are being reasonable.
+### Requirements
+
+1. Everything is running in distributed mode.
+2. [wrk](https://github.com/wg/wrk) is installed in your system.
+
+### Tests
+
+1. Load test link creation
+
+```sh
+wrk -t8 -d10s -c100 -s "./deploy/load/put.lua" http://localhost:5002/api/v1/links
+```
+
+2.  Load test link data API. Get one of shortIDs created in previous step
+
+```sh
+wrk -t8 -d10s -c100 http://localhost:5001/api/v1/links/<shortID>
+```
+
+3. load test link redirection
+
+```sh
+wrk -t8 -d10s -c100 http://localhost:5000/<shortID>
+```
+
+## Contributing
+
+Feel free to open an issue or pull request.
