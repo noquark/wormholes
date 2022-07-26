@@ -9,13 +9,13 @@
 
 ## Why wormholes ?
 
-I was curious on how to scale link-shortners reliably and decided to write one. More details on this in my blog posts [here](https://mohitsingh.in/code/building-a-link-shortner) and [here](https://mohitsingh.in/code/a-distributed-link-shortner).
+I was curious on how to scale link-shortners reliably and decided to write one. More details on this in my blog posts [Building a link shortner](https://mohitsingh.in/code/building-a-link-shortner) and [A distributed link shortener](https://mohitsingh.in/code/a-distributed-link-shortner).
 
 ## Getting Started
 
 1. Default database configs are inside `deploy/conf`. Verify those.
 2. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/).
-3. Run postgres, timescale and redis now &mdash;
+3. Run following to start postgres, timescale and redis in containers &mdash;
 
 ```sh
 ./deploy/start_db.sh
@@ -41,7 +41,7 @@ go build .
 
 ## Using in production
 
-You can run instances of postgres, timescale and redis inside docker. You can also start each of generator, creator and director independently using same image with different `-as` flag. This allows you to scale creator and director as per your needs.
+You can start each of generator, creator and director independently using same image with different `-as` flag. This allows you to scale creator and director as per your needs.
 
 ## Environment Variables
 
