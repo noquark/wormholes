@@ -12,6 +12,7 @@ import (
 	"wormholes/services/generator"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/rs/zerolog"
@@ -72,6 +73,7 @@ func main() {
 		cHandler.Setup(linksAPI)
 
 		redirectAPI := app.Group("l")
+		redirectAPI.Use(cache.New())
 		redirectAPI.Get("/:id", dHandler.Redirect)
 
 		app.Use(etag.New())
