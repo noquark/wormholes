@@ -9,7 +9,7 @@
 
 ## Why wormholes ?
 
-I was curious on how to scale link-shortners reliably and decided to write one. More details on this in my blog posts [Building a link shortner](https://mohitsingh.in/code/building-a-link-shortner).
+I was curious on how to scale link-shortners reliably and decided to write one. See [Building a link shortner](https://mohitsingh.in/code/building-a-link-shortner) for the story.
 
 ## Getting Started
 
