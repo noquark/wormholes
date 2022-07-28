@@ -24,7 +24,7 @@ I was curious on how to scale link-shortners reliably and decided to write one. 
 4. Run wormholes with docker
 
 ```sh
-docker run -d --network host --name generator ghcr.io/mohitsinghs/wormholes:latest
+docker run -d --network host --name ghcr.io/mohitsinghs/wormholes:latest
 ```
 
 Or, build and run the binary yourself
