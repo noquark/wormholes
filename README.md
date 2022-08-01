@@ -7,9 +7,15 @@
 </p>
 <br />
 
-## Why wormholes ?
+## Features
 
-I was curious on how to scale link-shortners reliably and decided to write one. See [Building a link shortner](https://mohitsingh.in/code/building-a-link-shortner) for the story.
+- [x] **Fast**. Create millions of links within minute.
+- [x] **Easy to use**. With unified mode, run everything except databases in a single image.
+- [x] **Scalable**. With distributed mode, run multiple instances of creator, and director.
+- [x] **Analytics**. Detailed Events are stored in TimescaleDB. Dashboard is WIP.
+- [ ] **Bulk link creation**.
+- [ ] **Protected endpoints**.
+- [ ] **Deep links**.
 
 ## Getting Started
 
@@ -118,6 +124,10 @@ wrk -t8 -d10s -c100 http://localhost:5002/<shortID>
 ```sh
 wrk -t8 -d10s -c100 http://localhost:5000/<shortID>
 ```
+
+## Why wormholes ?
+
+I was curious on how to scale link-shortners reliably and decided to write one. See [Building a link shortner](https://mohitsingh.in/code/building-a-link-shortner) for the story.
 
 ## Contributing
 
