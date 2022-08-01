@@ -13,35 +13,43 @@ I was curious on how to scale link-shortners reliably and decided to write one. 
 
 ## Getting Started
 
-1. Default database configs are inside `deploy/conf`. Verify those.
-2. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/).
-3. Run following to start postgres, timescale and redis in containers &mdash;
+### Preparing
+
+Default database configs are inside `deploy/conf`. Verify those. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/). You may also want to mount volumes for database which you can do inside default compose files.
+
+### Unified Mode
+
+Run wormholes with docker-compose
 
 ```sh
-./deploy/start_db.sh
+cd deploy
+docker compose -f compose/unified.yml up -d
 ```
 
-4. Run wormholes with docker
+Following are the API endpoints in unified mode.
+
+1. **PUT** `:5000/v1/links`
+2. **POST** `:5000/v1/links/:id`
+3. **GET** `:5000/v1/links/:id`
+4. **DELETE** `:5000/v1/links/:id`
+5. **GET** `:5000/l/:id`
+
+### Distributed Mode
+
+Run wormholes with docker-compose
 
 ```sh
-docker run -d --network host --name ghcr.io/mohitsinghs/wormholes:latest
+cd deploy
+docker compose -f compose/distributed.yml up -d
 ```
 
-Or, build and run the binary yourself
+Following are the API endpoints in distributed mode.
 
-```sh
-# clone repository
-git clone https://github.com/mohitsinghs/wormholes
-cd wormholes
-# build binary
-go build .
-# run unified
-./wormholes
-```
-
-## Using in production
-
-You can start each of generator, creator and director independently using same image with different `-as` flag. This allows you to scale creator and director as per your needs.
+1. **PUT** `:5002`
+2. **POST** `:5002/:id`
+3. **GET** `:5002/:id`
+4. **DELETE** `:5002/:id`
+5. **GET** `:5000/:id`
 
 ## Environment Variables
 
@@ -88,7 +96,7 @@ Following are the environment variables and there usage &mdash;
 
 ### Requirements
 
-1. Everything is running in distributed mode.
+1. Everything is running in **distributed mode**.
 2. [wrk](https://github.com/wg/wrk) is installed in your system.
 
 ### Tests
@@ -96,13 +104,13 @@ Following are the environment variables and there usage &mdash;
 1. Load test link creation
 
 ```sh
-wrk -t8 -d10s -c100 -s "./deploy/load/put.lua" http://localhost:5002/api/v1/links
+wrk -t8 -d10s -c100 -s "./deploy/load/put.lua" http://localhost:5002
 ```
 
 2.  Load test link data API. Get one of shortIDs created in previous step
 
 ```sh
-wrk -t8 -d10s -c100 http://localhost:5001/api/v1/links/<shortID>
+wrk -t8 -d10s -c100 http://localhost:5002/<shortID>
 ```
 
 3. load test link redirection
