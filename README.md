@@ -57,73 +57,10 @@ Following are the API endpoints in distributed mode.
 4. **DELETE** `:5002/:id`
 5. **GET** `:5000/:id`
 
-## Environment Variables
+## Additional Help
 
-Wormholes is highly customizable with environment variables. The default values are there to make them work on local setup, for production these needs modifications.
-
-Following are the environment variables and there usage &mdash;
-
-1. For distributed setup
-
-| Name          | Purpose                                   |                                           Default Value |
-| ------------- | ----------------------------------------- | ------------------------------------------------------: |
-| `PORT`        | The port to run (`5000` when unified)     | `5000` (director), `5001` (generator), `5002` (creator) |
-| `BATCH_SIZE`  | Size of batch when ingesting events       |                                                 `10000` |
-| `STREAMS`     | Number of streams to ingest events        |                                                     `8` |
-| `ID_SIZE`     | Size of generated IDs                     |                                                     `7` |
-| `BLOOM_MAX`   | Limit of IDs to store                     |                                               `1000000` |
-| `BLOOM_ERROR` | Rate of false positives in bloom filter   |                                             `0.0000001` |
-| `BUCKET_SIZE` | Number of buckets to store IDs            |                                                     `8` |
-| `BUCKET_CAP`  | Number of IDs to store in a single bucket |                                               `100000 ` |
-| `GEN_ADDR`    | Address of generator instance             |                                        `localhost:5001` |
-| `TS_URI`      | URI for connecting to TimescaleDB         |  `postgres://postgres:postgres@localhost:5433/postgres` |
-| `PG_URI`      | URI for connecting to PostgreSQL          |  `postgres://postgres:postgres@localhost:5432/postgres` |
-| `PG_MAX_CONN` | Max connections for PostgreSQL            |                                                  `5000` |
-| `REDIS_URI`   | URI for connecting to Redis               |                       `redis://:redis@localhost:6379/0` |
-
-2. For unified setup
-
-| Name          | Purpose                                   |             Default Value |
-| ------------- | ----------------------------------------- | ------------------------: |
-| `PORT`        | The port to run                           |                    `5000` |
-| `BATCH_SIZE`  | Size of batch when ingesting events       |                   `10000` |
-| `STREAMS`     | Number of streams to ingest events        |                       `8` |
-| `ID_SIZE`     | Size of generated IDs                     |                       `7` |
-| `BLOOM_MAX`   | Limit of IDs to store                     |                 `1000000` |
-| `BLOOM_ERROR` | Rate of false positives in bloom filter   |               `0.0000001` |
-| `BUCKET_SIZE` | Number of buckets to store IDs            |                       `8` |
-| `BUCKET_CAP`  | Number of IDs to store in a single bucket |                 `100000 ` |
-| `TS_URI`      | URI for connecting to TimescaleDB         | same as distributed setup |
-| `PG_URI`      | URI for connecting to PostgreSQL          | same as distributed setup |
-| `PG_MAX_CONN` | Max connections for PostgreSQL            |                    `5000` |
-| `REDIS_URI`   | URI for connecting to Redis               | same as distributed setup |
-
-## Load Testing with wrk
-
-### Requirements
-
-1. Everything is running in **distributed mode**.
-2. [wrk](https://github.com/wg/wrk) is installed in your system.
-
-### Tests
-
-1. Load test link creation
-
-```sh
-wrk -t8 -d10s -c100 -s "./deploy/load/put.lua" http://localhost:5002
-```
-
-2.  Load test link data API. Get one of shortIDs created in previous step
-
-```sh
-wrk -t8 -d10s -c100 http://localhost:5002/<shortID>
-```
-
-3. load test link redirection
-
-```sh
-wrk -t8 -d10s -c100 http://localhost:5000/<shortID>
-```
+- [Customize with environment variables](https://github.com/mohitsinghs/wormholes/wiki/Environment-Variables).
+- [Load testing wrk](https://github.com/mohitsinghs/wormholes/wiki/Load-Testing-with-wrk)
 
 ## Why wormholes ?
 
