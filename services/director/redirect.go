@@ -38,31 +38,29 @@ func NewHandler(pipe *Pipe, db *pgxpool.Pool, cache *redis.Client) *Handler {
 }
 
 func (h *Handler) Redirect(c *fiber.Ctx) error {
-	id := c.Params("id")
-	if len(id) == 0 {
+	shortID := c.Params("id")
+	if len(shortID) == 0 {
 		return fiber.ErrBadRequest
 	}
 
 	var link Link
 
-	err := h.cache.HGetAll(context.Background(), id).Scan(&link)
+	err := h.cache.HGetAll(context.Background(), shortID).Scan(&link)
 	if err != nil || reflect.ValueOf(link).IsZero() {
 		log.Err(err).Msg("redirect: cache miss")
 
 		// If key does not exists, query db
-		rows := h.db.QueryRow(context.Background(),
+		err := h.db.QueryRow(context.Background(),
 			linkGet,
-			id,
-		)
-
-		err := rows.Scan(&link.ID, &link.Target, &link.Tag)
+			shortID,
+		).Scan(&link.ID, &link.Target, &link.Tag)
 		if err != nil {
 			log.Error().Err(err).Msg("redirect: error getting link")
 
 			return fiber.ErrInternalServerError
 		}
 
-		err = h.cache.HSet(context.Background(), id, "id", link.ID, "target", link.Target, "tag", link.Tag).Err()
+		err = h.cache.HSet(context.Background(), shortID, "id", link.ID, "target", link.Target, "tag", link.Tag).Err()
 		if err != nil {
 			log.Warn().Err(err).Msg("redirect: failed to cache")
 		}
