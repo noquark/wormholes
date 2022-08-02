@@ -44,9 +44,9 @@ type LinkCreateRequest struct {
 	Target string `json:"target"`
 }
 
-func (h *Handler) Create(c *fiber.Ctx) error {
+func (h *Handler) Create(ctx *fiber.Ctx) error {
 	var req LinkCreateRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := ctx.BodyParser(&req); err != nil {
 		log.Error().Err(err).Msg("create: failed to parsing request")
 
 		return fiber.ErrBadRequest
@@ -54,25 +54,25 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	var link *Link
 
-	id, err := h.reserve.GetID()
+	newID, err := h.reserve.GetID()
 	if err != nil {
 		log.Error().Err(err).Msg("create: failed to get id")
 
 		return fiber.ErrInternalServerError
 	}
 
-	link = NewLink(id, req.Target, req.Tag)
+	link = NewLink(newID, req.Target, req.Tag)
 	h.ingestor.Push(link)
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status": "Link Created",
 		"id":     link.ID,
 	})
 }
 
-func (h *Handler) Update(c *fiber.Ctx) error {
+func (h *Handler) Update(ctx *fiber.Ctx) error {
 	var link Link
-	if err := c.BodyParser(&link); err != nil {
+	if err := ctx.BodyParser(&link); err != nil {
 		log.Error().Err(err).Msg("error parsing request")
 
 		return fiber.ErrBadRequest
@@ -84,23 +84,23 @@ func (h *Handler) Update(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	return c.SendStatus(fiber.StatusOK)
+	return ctx.SendStatus(fiber.StatusOK)
 }
 
-func (h *Handler) Get(c *fiber.Ctx) error {
-	id := c.Params("id")
-	if len(id) == 0 {
+func (h *Handler) Get(ctx *fiber.Ctx) error {
+	shortID := ctx.Params("id")
+	if len(shortID) == 0 {
 		return fiber.ErrBadRequest
 	}
 
 	var link Link
 
-	err := h.cache.HGetAll(context.Background(), id).Scan(&link)
+	err := h.cache.HGetAll(context.Background(), shortID).Scan(&link)
 	if err != nil || reflect.ValueOf(link).IsZero() {
 		log.Err(err).Msg("get: cache miss")
 
 		// If key does not exists, query db
-		link, err = h.backend.Get(id)
+		link, err = h.backend.Get(shortID)
 
 		if err != nil {
 			log.Error().Err(err).Msg("get: error getting link")
@@ -108,19 +108,19 @@ func (h *Handler) Get(c *fiber.Ctx) error {
 			return fiber.ErrBadRequest
 		}
 
-		err = h.cache.HSet(context.Background(), id, "id", link.ID, "target", link.Target, "tag", link.Tag).Err()
+		err = h.cache.HSet(context.Background(), shortID, "id", link.ID, "target", link.Target, "tag", link.Tag).Err()
 		if err != nil {
 			log.Warn().Err(err).Msg("get: failed to cache")
 		}
 
-		return c.Status(fiber.StatusOK).JSON(link)
+		return ctx.Status(fiber.StatusOK).JSON(link)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(link)
+	return ctx.Status(fiber.StatusOK).JSON(link)
 }
 
-func (h *Handler) Delete(c *fiber.Ctx) error {
-	id := c.Params("id")
+func (h *Handler) Delete(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
 	if len(id) == 0 {
 		return fiber.ErrBadRequest
 	}
@@ -131,5 +131,5 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	return c.SendStatus(fiber.StatusOK)
+	return ctx.SendStatus(fiber.StatusOK)
 }

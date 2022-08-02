@@ -76,14 +76,14 @@ func (i *Ingestor) add(link *Link) {
 }
 
 func (i *Ingestor) ingest() {
-	br := i.db.SendBatch(context.Background(), i.batch)
+	batchOp := i.db.SendBatch(context.Background(), i.batch)
 
-	_, err := br.Exec()
+	_, err := batchOp.Exec()
 	if err != nil {
 		log.Printf("error inserting item : %v", err)
 	}
 
-	err = br.Close()
+	err = batchOp.Close()
 	if err != nil {
 		log.Printf("error closing batch : %v", err)
 	}
