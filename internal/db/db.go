@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Mode string `env:"MODE" envDefault:"unified"`
 	Postgres
 	Timescale
 	Redis
