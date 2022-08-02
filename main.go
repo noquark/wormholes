@@ -11,6 +11,7 @@ import (
 	"wormholes/services/director"
 	"wormholes/services/generator"
 
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
@@ -66,6 +67,8 @@ func main() {
 			DisableStartupMessage:   true,
 			EnableTrustedProxyCheck: true,
 			ServerHeader:            "wormholes",
+			JSONEncoder:             json.Marshal,
+			JSONDecoder:             json.Unmarshal,
 		})
 
 		apiV1 := app.Group("v1")

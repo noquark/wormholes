@@ -5,8 +5,8 @@ import (
 	"wormholes/internal/header"
 
 	"github.com/go-redis/redis/v8"
+	json "github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -24,6 +24,9 @@ func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, redis *redis.Client) {
 		EnableTrustedProxyCheck: true,
 		Prefork:                 true,
 		ServerHeader:            "wormholes",
+		JSONEncoder:             json.Marshal,
+		JSONDecoder:             json.Unmarshal,
+		GETOnly:                 true,
 	})
 
 	if !fiber.IsChild() {
@@ -34,7 +37,6 @@ func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, redis *redis.Client) {
 
 	app.Use(etag.New())
 	app.Use(recover.New())
-	app.Use(cache.New())
 
 	app.Get("/:id", handler.Redirect)
 

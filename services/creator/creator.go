@@ -6,6 +6,7 @@ import (
 	"wormholes/services/creator/reserve"
 
 	"github.com/go-redis/redis/v8"
+	json "github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -27,6 +28,8 @@ func Run(pg *pgxpool.Pool, redis *redis.Client) {
 		EnableTrustedProxyCheck: true,
 		Prefork:                 true,
 		ServerHeader:            "wormholes",
+		JSONEncoder:             json.Marshal,
+		JSONDecoder:             json.Unmarshal,
 	})
 
 	if !fiber.IsChild() {
