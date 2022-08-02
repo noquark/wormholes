@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"wormholes/internal/db"
@@ -12,55 +11,44 @@ import (
 	"wormholes/services/generator"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-const (
-	Generator = "generator"
-	Creator   = "creator"
-	Director  = "director"
-	Unified   = "unified"
-)
-
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	as := flag.String("as", Unified, "Run wormhole as")
-	flag.Parse()
-
 	dbConf := db.Load()
-	pg := dbConf.Postgres.Connect()
-	ts := dbConf.Timescale.Connect()
+	postgres := dbConf.Postgres.Connect()
+	timescale := dbConf.Timescale.Connect()
 	redis := dbConf.Redis.Connect()
 
-	db.InitPg(pg)
-	db.InitTS(ts)
+	db.InitPg(postgres)
+	db.InitTS(timescale)
 
-	switch *as {
-	case Generator:
-		generator.Run(pg)
-	case Creator:
-		creator.Run(pg, redis)
-	case Director:
-		director.Run(pg, ts, redis)
-	case Unified:
+	switch dbConf.Mode {
+	case db.ModeGenerator:
+		generator.Run(postgres)
+	case db.ModeCreator:
+		creator.Run(postgres, redis)
+	case db.ModeDirector:
+		director.Run(postgres, timescale, redis)
+	case db.ModeUnified:
 		genConf := generator.DefaultConfig()
 		creatorConf := creator.DefaultConfig()
 		directorConf := director.DefaultConfig()
 
-		factory := generator.NewFactory(genConf, pg).Prepare().Run()
-		ingestor := creator.NewIngestor(pg, creatorConf.BatchSize).Start()
+		factory := generator.NewFactory(genConf, postgres).Prepare().Run()
+		ingestor := creator.NewIngestor(postgres, creatorConf.BatchSize).Start()
 		reserve := reserve.WithLocal(factory)
-		store := creator.NewPgStore(pg)
-		pipe := director.NewPipe(directorConf, ts).Start().Wait()
+		store := creator.NewPgStore(postgres)
+		pipe := director.NewPipe(directorConf, timescale).Start().Wait()
 
 		cHandler := creator.NewHandler(store, ingestor, redis, reserve)
-		dHandler := director.NewHandler(pipe, pg, redis)
+		dHandler := director.NewHandler(pipe, postgres, redis)
 
 		app := fiber.New(fiber.Config{
 			DisableStartupMessage:   true,
@@ -73,7 +61,6 @@ func main() {
 		cHandler.Setup(linksAPI)
 
 		redirectAPI := app.Group("l")
-		redirectAPI.Use(cache.New())
 		redirectAPI.Get("/:id", dHandler.Redirect)
 
 		app.Use(etag.New())
