@@ -76,7 +76,6 @@ services:
         condition: 'service_started'
   director:
     image: ghcr.io/mohitsinghs/wormholes:latest
-    command: ./wormholes -as director
     ports:
       - 5000:5000
     networks:
