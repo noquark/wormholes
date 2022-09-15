@@ -5,6 +5,7 @@ import (
 	"os"
 	"wormholes/internal/db"
 	"wormholes/internal/header"
+	"wormholes/internal/modes"
 	"wormholes/services/creator"
 	"wormholes/services/creator/reserve"
 	"wormholes/services/director"
@@ -30,13 +31,13 @@ func main() {
 	db.InitTS(timescale)
 
 	switch dbConf.Mode {
-	case db.ModeGenerator:
+	case modes.Generator:
 		generator.Run(postgres)
-	case db.ModeCreator:
+	case modes.Creator:
 		creator.Run(postgres, redis)
-	case db.ModeDirector:
+	case modes.Director:
 		director.Run(postgres, timescale, redis)
-	case db.ModeUnified:
+	case modes.Unified:
 		genConf := generator.DefaultConfig()
 		creatorConf := creator.DefaultConfig()
 		directorConf := director.DefaultConfig()
