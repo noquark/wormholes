@@ -7,10 +7,3 @@ const (
 	TypeTimescale Type = "timescale"
 	TypeRedis     Type = "redis"
 )
-
-const (
-	ModeUnified   = "unified"
-	ModeCreator   = "creator"
-	ModeDirector  = "director"
-	ModeGenerator = "generator"
-)
