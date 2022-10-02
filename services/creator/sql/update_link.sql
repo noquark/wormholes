@@ -1,5 +1,5 @@
 update
-  wh_links
+  links
 set
   target = $1,
   tag = $2

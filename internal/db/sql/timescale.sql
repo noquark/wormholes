@@ -1,5 +1,5 @@
 -- TimescaleDB
-create table if not exists wh_clicks (
+create table if not exists clicks (
   time timestamptz not null,
   link text not null,
   tag text not null,
@@ -16,5 +16,5 @@ create table if not exists wh_clicks (
 
 -- create hypertable
 select
-  create_hypertable ('wh_clicks', 'time', if_not_exists => true);
+  create_hypertable ('clicks', 'time', if_not_exists => true);
 

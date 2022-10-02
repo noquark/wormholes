@@ -3,6 +3,6 @@ select
   target,
   tag
 from
-  wh_links
+  links
 where
   id = $1

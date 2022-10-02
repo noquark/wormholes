@@ -18,15 +18,15 @@ import (
 )
 
 const (
-	queryIDs      string = `SELECT id from wh_links`
-	queryIDsCount string = `SELECT count(id) from wh_links`
+	queryIDs      string = `SELECT id from links`
+	queryIDsCount string = `SELECT count(id) from links`
 	maxBarWidth          = 64
 )
 
 // An ID generation factory made of -
-//  - A db connection for loading IDs on startup
-//  - A bloom-filter based on all existing ids to avoid collisions
-//  - size of ID (default is 7)
+//   - A db connection for loading IDs on startup
+//   - A bloom-filter based on all existing ids to avoid collisions
+//   - size of ID (default is 7)
 type Factory struct {
 	protos.UnimplementedBucketServiceServer
 	db    *pgxpool.Pool

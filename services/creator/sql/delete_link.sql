@@ -1,2 +1,2 @@
-delete from wh_links
+delete from links
 where id = $1

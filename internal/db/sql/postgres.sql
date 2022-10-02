@@ -1,5 +1,5 @@
 -- links
-create table if not exists wh_links (
+create table if not exists links (
   id text primary key,
   tag text,
   target text,
