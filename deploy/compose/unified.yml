@@ -31,7 +31,7 @@ services:
     healthcheck:
       test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
   wormholes:
-    image: ghcr.io/mohitsinghs/wormholes:latest
+    image: ghcr.io/wormholesdev/wormholes:latest
     networks:
       - wh_internal
     ports:
