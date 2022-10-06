@@ -1,9 +1,9 @@
 <h1 align="center">wormholes</h1>
 <p align='center'>
-  <img alt="GitHub" src="https://img.shields.io/github/workflow/status/mohitsinghs/wormholes/docker?logo=github&style=flat-square" />
+  <img alt="GitHub" src="https://img.shields.io/github/workflow/status/wormholesdev/wormholes/docker?logo=github&style=flat-square" />
   <img alt="Go Report Card" src="https://img.shields.io/badge/go%20report-A-green.svg?style=flat-square&logo=go&logoColor=white" />
-  <img alt="GitHub" src="https://img.shields.io/github/license/mohitsinghs/wormholes?logo=gnu&style=flat-square" />
-  <img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/mohitsinghs/wormholes?logo=go&logoColor=white&style=flat-square" />
+  <img alt="GitHub" src="https://img.shields.io/github/license/wormholesdev/wormholes?logo=gnu&style=flat-square" />
+  <img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/wormholesdev/wormholes?logo=go&logoColor=white&style=flat-square" />
 </p>
 <br />
 
@@ -59,8 +59,8 @@ Following are the API endpoints in distributed mode.
 
 ## Additional Help
 
-- [Customize with environment variables](https://github.com/mohitsinghs/wormholes/wiki/Environment-Variables).
-- [Load testing wrk](https://github.com/mohitsinghs/wormholes/wiki/Load-Testing-with-wrk)
+- [Customize with environment variables](https://github.com/wormholesdev/wormholes/wiki/Environment-Variables).
+- [Load testing wrk](https://github.com/wormholesdev/wormholes/wiki/Load-Testing-with-wrk)
 
 ## Why wormholes ?
 

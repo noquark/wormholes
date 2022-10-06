@@ -1,6 +1,6 @@
 package director
 
-import "github.com/mohitsinghs/nanoid"
+import "github.com/wormholesdev/nanoid"
 
 const (
 	MaxTry     = 10

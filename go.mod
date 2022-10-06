@@ -10,9 +10,9 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gofiber/fiber/v2 v2.35.0
 	github.com/jackc/pgx/v4 v4.16.1
-	github.com/mohitsinghs/nanoid v0.0.0-20220530103819-84798240f1df
 	github.com/mssola/user_agent v0.5.3
 	github.com/rs/zerolog v1.27.0
+	github.com/wormholesdev/nanoid v0.0.0-20221006031952-5f53d944191f
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
 )

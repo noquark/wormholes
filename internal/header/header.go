@@ -11,7 +11,7 @@ func Show(name string) {
 	log.SetFlags(0)
 	log.Println()
 	log.Println(fmt.Sprintf("Wormholes | %s Service", name))
-	log.Printf("Copyright © %d No Quark Labs", time.Now().Year())
+	log.Printf("Copyright © %d Mohit Singh", time.Now().Year())
 	log.Println("Licensed under GNU AFFERO GENERAL PUBLIC LICENSE 3.0")
 	log.Println()
 }
