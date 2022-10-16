@@ -9,13 +9,10 @@
 
 ## Features
 
-- [x] **Fast**. Create millions of links within minute.
-- [x] **Easy to use**. With unified mode, run everything except databases in a single image.
-- [x] **Scalable**. With distributed mode, run multiple instances of creator, and director.
-- [x] **Analytics**. Detailed Events are stored in TimescaleDB. Dashboard is WIP.
-- [ ] **Bulk link creation**.
-- [ ] **Protected endpoints**.
-- [ ] **Deep links**.
+- **Fast**. Create millions of links within minute.
+- **Easy to use**. With unified mode, run everything except databases in a single image.
+- **Scalable**. With distributed mode, run multiple instances of creator, and director.
+- **Analytics**. Detailed Events are stored in TimescaleDB. Dashboard is WIP.
 
 ## Getting Started
 
@@ -23,7 +20,7 @@
 
 Default database configs are inside `deploy/conf`. Verify those. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/). You may also want to mount volumes for database which you can do inside default compose files.
 
-### Unified Mode
+### Running in Unified Mode
 
 Run wormholes with docker-compose
 
@@ -40,7 +37,7 @@ Following are the API endpoints in unified mode.
 4. **DELETE** `:5000/v1/links/:id`
 5. **GET** `:5000/l/:id`
 
-### Distributed Mode
+### Running in Distributed Mode
 
 Run wormholes with docker-compose
 
@@ -59,12 +56,7 @@ Following are the API endpoints in distributed mode.
 
 ## Additional Help
 
-- [Customize with environment variables](https://github.com/wormholesdev/wormholes/wiki/Environment-Variables).
-- [Load testing wrk](https://github.com/wormholesdev/wormholes/wiki/Load-Testing-with-wrk)
-
-## Why wormholes ?
-
-I was curious on how to scale link-shortners reliably and decided to write one. See [Building a link shortner](https://mohitsingh.in/code/building-a-link-shortner) for the story.
+For detailed documentation visit [Docs](https://wormholes.dev/docs)
 
 ## Contributing
 
