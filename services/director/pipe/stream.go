@@ -1,17 +1,15 @@
-package director
+package pipe
 
 import (
 	"context"
 	_ "embed"
 	"log"
+	"wormholes/services/director/sql"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mssola/user_agent"
 )
-
-//go:embed sql/insert_event.sql
-var eventInsert string
 
 // Stream to ingest data in batches
 
@@ -62,7 +60,7 @@ func (s *Stream) Add(item interface{}) {
 		browser, browserVersion := ua.Browser()
 
 		s.Batch.Queue(
-			eventInsert,
+			sql.InsertEvent,
 			item.Time, item.Link, item.Tag, item.Cookie, item.IP,
 			ua.Mobile(), ua.Bot(), browser, browserVersion, ua.OSInfo().Name, ua.OSInfo().Version, ua.Platform(),
 		)

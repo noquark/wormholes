@@ -8,6 +8,7 @@ import (
 	"wormholes/services/creator/reserve"
 	"wormholes/services/creator/store"
 	"wormholes/services/director"
+	"wormholes/services/director/pipe"
 	"wormholes/services/generator"
 
 	"github.com/go-redis/redis/v8"
@@ -23,15 +24,15 @@ func Run(
 	timescale *pgxpool.Pool,
 	redis *redis.Client,
 ) {
-	genConf := generator.DefaultConfig()
-	creatorConf := creator.DefaultConfig()
-	directorConf := director.DefaultConfig()
+	gConf := generator.DefaultConfig()
+	cConf := creator.DefaultConfig()
+	dConf := director.DefaultConfig()
 
-	factory := generator.NewFactory(genConf, postgres).Prepare().Run()
-	ingest := ingestor.New(postgres, creatorConf.BatchSize).Start()
+	factory := generator.NewFactory(gConf, postgres).Prepare().Run()
+	ingest := ingestor.New(postgres, cConf.BatchSize).Start()
 	reserve := reserve.WithLocal(factory)
 	cStore := store.WithPg(postgres)
-	pipe := director.NewPipe(directorConf, timescale).Start().Wait()
+	pipe := pipe.New(dConf.BatchSize, dConf.Streams, timescale).Start().Wait()
 
 	cHandler := creator.NewHandler(cStore, ingest, redis, reserve)
 	dHandler := director.NewHandler(pipe, postgres, redis)
@@ -53,9 +54,9 @@ func Run(
 	app.Use(recover.New())
 
 	header.Show("Unified")
-	log.Info().Msgf("Running on port %d", directorConf.Port)
+	log.Info().Msgf("Running on port %d", dConf.Port)
 
-	if err := app.Listen(fmt.Sprintf(":%d", directorConf.Port)); err != nil {
+	if err := app.Listen(fmt.Sprintf(":%d", dConf.Port)); err != nil {
 		log.Error().Err(err).Msg("failed to start server")
 	}
 }

@@ -1,6 +1,6 @@
 package store
 
-import "wormholes/services/creator/links"
+import "wormholes/internal/links"
 
 type Store interface {
 	Get(id string) (links.Link, error)

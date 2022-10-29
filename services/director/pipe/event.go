@@ -1,4 +1,4 @@
-package director
+package pipe
 
 import (
 	"time"

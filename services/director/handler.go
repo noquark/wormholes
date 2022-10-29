@@ -5,6 +5,8 @@ import (
 	_ "embed"
 	"reflect"
 	"time"
+	"wormholes/internal/links"
+	"wormholes/services/director/pipe"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -24,12 +26,12 @@ var linkGet string
 // Fiber route handlers for link
 
 type Handler struct {
-	pipe  *Pipe
+	pipe  *pipe.Pipe
 	db    *pgxpool.Pool
 	cache *redis.Client
 }
 
-func NewHandler(pipe *Pipe, db *pgxpool.Pool, cache *redis.Client) *Handler {
+func NewHandler(pipe *pipe.Pipe, db *pgxpool.Pool, cache *redis.Client) *Handler {
 	return &Handler{
 		pipe,
 		db,
@@ -43,7 +45,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	var link Link
+	var link links.Link
 
 	err := h.cache.HGetAll(context.Background(), shortID).Scan(&link)
 	if err != nil || reflect.ValueOf(link).IsZero() {
@@ -81,7 +83,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 	}
 
 	c.Set(fiber.HeaderCacheControl, CacheControl)
-	h.pipe.Push(NewEvent(link.ID, link.Tag, cookie, c.Get(fiber.HeaderUserAgent), c.IP()))
+	h.pipe.Push(pipe.NewEvent(link.ID, link.Tag, cookie, c.Get(fiber.HeaderUserAgent), c.IP()))
 
 	return c.Redirect(link.Target, fiber.StatusMovedPermanently)
 }
