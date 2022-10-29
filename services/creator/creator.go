@@ -3,7 +3,9 @@ package creator
 import (
 	"fmt"
 	"wormholes/internal/header"
+	"wormholes/services/creator/ingestor"
 	"wormholes/services/creator/reserve"
+	"wormholes/services/creator/store"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -15,12 +17,10 @@ import (
 
 func Run(pg *pgxpool.Pool, redis *redis.Client) {
 	conf := DefaultConfig()
-	store := NewPgStore(pg)
-
-	ingestor := NewIngestor(pg, conf.BatchSize).Start()
+	db := store.WithPg(pg)
+	pipe := ingestor.New(pg, conf.BatchSize).Start()
 	reserve := reserve.WithGrpc(conf.GenAddr)
-
-	handler := NewHandler(store, ingestor, redis, reserve)
+	handler := NewHandler(db, pipe, redis, reserve)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,

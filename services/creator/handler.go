@@ -3,7 +3,10 @@ package creator
 import (
 	"context"
 	"reflect"
+	"wormholes/services/creator/ingestor"
+	"wormholes/services/creator/links"
 	"wormholes/services/creator/reserve"
+	"wormholes/services/creator/store"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -12,15 +15,15 @@ import (
 
 // Fiber route handlers for link.
 type Handler struct {
-	backend  Store
-	ingestor *Ingestor
+	backend  store.Store
+	ingestor *ingestor.Ingestor
 	cache    *redis.Client
 	reserve  reserve.Reserve
 }
 
 func NewHandler(
-	backend Store,
-	ingestor *Ingestor,
+	backend store.Store,
+	ingestor *ingestor.Ingestor,
 	cache *redis.Client,
 	reserve reserve.Reserve,
 ) *Handler {
@@ -52,7 +55,7 @@ func (h *Handler) Create(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	var link *Link
+	var link *links.Link
 
 	newID, err := h.reserve.GetID()
 	if err != nil {
@@ -61,7 +64,7 @@ func (h *Handler) Create(ctx *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
-	link = NewLink(newID, req.Target, req.Tag)
+	link = links.New(newID, req.Target, req.Tag)
 	h.ingestor.Push(link)
 
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -71,7 +74,7 @@ func (h *Handler) Create(ctx *fiber.Ctx) error {
 }
 
 func (h *Handler) Update(ctx *fiber.Ctx) error {
-	var link Link
+	var link links.Link
 	if err := ctx.BodyParser(&link); err != nil {
 		log.Error().Err(err).Msg("error parsing request")
 
@@ -93,7 +96,7 @@ func (h *Handler) Get(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	var link Link
+	var link links.Link
 
 	err := h.cache.HGetAll(context.Background(), shortID).Scan(&link)
 	if err != nil || reflect.ValueOf(link).IsZero() {

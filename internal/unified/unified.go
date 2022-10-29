@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"wormholes/internal/header"
 	"wormholes/services/creator"
+	"wormholes/services/creator/ingestor"
 	"wormholes/services/creator/reserve"
+	"wormholes/services/creator/store"
 	"wormholes/services/director"
 	"wormholes/services/generator"
 
@@ -26,12 +28,12 @@ func Run(
 	directorConf := director.DefaultConfig()
 
 	factory := generator.NewFactory(genConf, postgres).Prepare().Run()
-	ingestor := creator.NewIngestor(postgres, creatorConf.BatchSize).Start()
+	ingest := ingestor.New(postgres, creatorConf.BatchSize).Start()
 	reserve := reserve.WithLocal(factory)
-	cStore := creator.NewPgStore(postgres)
+	cStore := store.WithPg(postgres)
 	pipe := director.NewPipe(directorConf, timescale).Start().Wait()
 
-	cHandler := creator.NewHandler(cStore, ingestor, redis, reserve)
+	cHandler := creator.NewHandler(cStore, ingest, redis, reserve)
 	dHandler := director.NewHandler(pipe, postgres, redis)
 
 	app := fiber.New(fiber.Config{

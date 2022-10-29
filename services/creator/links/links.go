@@ -1,4 +1,4 @@
-package creator
+package links
 
 // Link model and constructor
 
@@ -8,7 +8,7 @@ type Link struct {
 	Tag    string `json:"tag" redis:"tag"`
 }
 
-func NewLink(id, target, tag string) *Link {
+func New(id, target, tag string) *Link {
 	return &Link{
 		ID:     id,
 		Target: target,
