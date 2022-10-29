@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	// backoff time is 500ms by default.
-	backoffTime = time.Millisecond * 5e2
+	// backOff time is 500ms by default.
+	backOffTime = time.Millisecond * 5e2
 	ErrNoIds    = errors.New("reserve: there are no IDs ready yet")
 )
 
@@ -80,7 +80,7 @@ func (r *GrpcReserve) GetID() (string, error) {
 	if r.isEmpty() {
 		r.fetch()
 		// this delays some request instead of failing them
-		time.Sleep(backoffTime)
+		time.Sleep(backOffTime)
 	} else {
 		return r.pop(), nil
 	}

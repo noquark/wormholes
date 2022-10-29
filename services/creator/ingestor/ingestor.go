@@ -1,17 +1,15 @@
-package creator
+package ingestor
 
 import (
 	"context"
-	_ "embed"
 	"log"
 	"time"
+	"wormholes/services/creator/links"
+	"wormholes/services/creator/sql"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
-
-//go:embed sql/insert_link.sql
-var linkInsert string
 
 const (
 	TickerInterval = time.Second * 10
@@ -23,17 +21,17 @@ type Ingestor struct {
 	batchSize int
 	batch     *pgx.Batch
 	quit      chan struct{}
-	source    chan *Link
+	source    chan *links.Link
 	ticker    *time.Ticker
 }
 
-func NewIngestor(db *pgxpool.Pool, batchSize int) *Ingestor {
+func New(db *pgxpool.Pool, batchSize int) *Ingestor {
 	return &Ingestor{
 		db:        db,
 		batchSize: batchSize,
 		batch:     &pgx.Batch{},
 		quit:      make(chan struct{}),
-		source:    make(chan *Link),
+		source:    make(chan *links.Link),
 		ticker:    time.NewTicker(TickerInterval),
 	}
 }
@@ -61,13 +59,13 @@ func (i *Ingestor) Start() *Ingestor {
 	return i
 }
 
-func (i *Ingestor) Push(link *Link) {
+func (i *Ingestor) Push(link *links.Link) {
 	i.source <- link
 }
 
-func (i *Ingestor) add(link *Link) {
+func (i *Ingestor) add(link *links.Link) {
 	i.batch.Queue(
-		linkInsert,
+		sql.Insert,
 		link.ID, link.Tag, link.Target)
 
 	if i.batch.Len() > i.batchSize {

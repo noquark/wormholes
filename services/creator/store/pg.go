@@ -1,51 +1,44 @@
-package creator
+package store
 
 import (
 	"context"
 	_ "embed"
 	"fmt"
 	"log"
+	"wormholes/services/creator/links"
+	"wormholes/services/creator/sql"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
-
-//go:embed sql/update_link.sql
-var sqlUpdate string
-
-//go:embed sql/get_link.sql
-var sqlGet string
-
-//go:embed sql/delete_link.sql
-var sqlDelete string
 
 // postgres implementation of link db store.
 type PgStore struct {
 	db *pgxpool.Pool
 }
 
-func NewPgStore(pool *pgxpool.Pool) *PgStore {
+func WithPg(pool *pgxpool.Pool) *PgStore {
 	return &PgStore{
 		db: pool,
 	}
 }
 
-func (p *PgStore) Get(id string) (Link, error) {
-	var link Link
+func (p *PgStore) Get(id string) (links.Link, error) {
+	var link links.Link
 
 	err := p.db.QueryRow(context.Background(),
-		sqlGet,
+		sql.Get,
 		id,
 	).Scan(&link.ID, &link.Target, &link.Tag)
 	if err != nil {
-		return Link{}, fmt.Errorf("failed to retrieve link: %w", err)
+		return links.Link{}, fmt.Errorf("failed to retrieve link: %w", err)
 	}
 
 	return link, nil
 }
 
-func (p *PgStore) Update(link *Link) error {
+func (p *PgStore) Update(link *links.Link) error {
 	_, err := p.db.Exec(context.Background(),
-		sqlUpdate,
+		sql.Update,
 		link.Target, link.Tag, link.ID,
 	)
 	if err != nil {
@@ -59,7 +52,7 @@ func (p *PgStore) Update(link *Link) error {
 
 func (p *PgStore) Delete(id string) error {
 	_, err := p.db.Exec(context.Background(),
-		sqlDelete,
+		sql.Delete,
 		id,
 	)
 	if err != nil {

@@ -59,7 +59,7 @@ func (r *LocalReserve) pop() string {
 func (r *LocalReserve) GetID() (string, error) {
 	if r.isEmpty() {
 		r.fetch()
-		time.Sleep(backoffTime)
+		time.Sleep(backOffTime)
 	} else {
 		return r.pop(), nil
 	}
