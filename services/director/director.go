@@ -3,6 +3,7 @@ package director
 import (
 	"fmt"
 	"wormholes/internal/header"
+	"wormholes/services/director/pipe"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +17,7 @@ import (
 func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, redis *redis.Client) {
 	conf := DefaultConfig()
 
-	pipe := NewPipe(conf, ts).Start().Wait()
+	pipe := pipe.New(conf.BatchSize, conf.Streams, ts).Start().Wait()
 	handler := NewHandler(pipe, pg, redis)
 
 	app := fiber.New(fiber.Config{

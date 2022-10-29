@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	"time"
-	"wormholes/services/creator/links"
+	"wormholes/internal/links"
 	"wormholes/services/creator/sql"
 
 	"github.com/jackc/pgx/v4"

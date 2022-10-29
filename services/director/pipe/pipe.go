@@ -1,4 +1,4 @@
-package director
+package pipe
 
 import (
 	"log"
@@ -23,14 +23,14 @@ type Pipe struct {
 	ticker    *time.Ticker
 }
 
-func NewPipe(conf *Config, db *pgxpool.Pool) *Pipe {
+func New(batchSize, streams int, db *pgxpool.Pool) *Pipe {
 	return &Pipe{
 		Streams:   make([]*Stream, 0),
 		Task:      make(Task),
 		Queue:     make(Queue),
 		db:        db,
-		batchSize: conf.BatchSize,
-		size:      conf.Streams,
+		batchSize: batchSize,
+		size:      streams,
 		ticker:    time.NewTicker(TickerInterval),
 	}
 }

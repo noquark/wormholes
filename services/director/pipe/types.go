@@ -1,4 +1,4 @@
-package director
+package pipe
 
 // Common interfaces for pipe.
 type (

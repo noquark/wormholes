@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"log"
-	"wormholes/services/creator/links"
+	"wormholes/internal/links"
 	"wormholes/services/creator/sql"
 
 	"github.com/jackc/pgx/v4/pgxpool"
