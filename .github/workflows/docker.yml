@@ -2,12 +2,8 @@ name: docker
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - '**/*.go'
-      - 'go.*'
-      - 'Dockerfile'
+    tags:
+      - 'v*'
 
 jobs:
   push:
