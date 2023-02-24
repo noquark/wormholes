@@ -17,15 +17,15 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	dbConf := db.Load()
-	postgres := dbConf.Postgres.Connect()
-	timescale := dbConf.Timescale.Connect()
-	redis := dbConf.Redis.Connect()
+	conf := db.Load()
+	postgres := conf.Postgres.Connect()
+	timescale := conf.Timescale.Connect()
+	redis := conf.Redis.Connect()
 
 	db.InitPg(postgres)
 	db.InitTS(timescale)
 
-	switch dbConf.Mode {
+	switch conf.Mode {
 	case modes.Generator:
 		generator.Run(postgres)
 	case modes.Creator:
