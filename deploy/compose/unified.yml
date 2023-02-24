@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   postgres:
-    image: postgres:alpine
+    image: postgres:15-alpine
     environment:
       - POSTGRES_PASSWORD=postgres
     networks:
@@ -13,7 +13,7 @@ services:
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready', '-d', 'postgres']
   timescale:
-    image: timescale/timescaledb:latest-pg13
+    image: timescale/timescaledb:latest-pg15
     environment:
       POSTGRES_PASSWORD: postgres
     networks:
@@ -21,7 +21,7 @@ services:
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready', '-d', 'postgres']
   redis:
-    image: redis:6-alpine
+    image: redis:7-alpine
     networks:
       - wh_internal
     configs:
