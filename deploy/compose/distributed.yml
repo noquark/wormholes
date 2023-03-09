@@ -42,11 +42,6 @@ services:
     environment:
       <<: *common_env
       MODE: generator # required
-      ID_SIZE: 7
-      BUCKET_SIZE: 16
-      BUCKET_CAP: 100000
-      BLOOM_MAX: 100000000
-      BLOOM_ERROR: 0.0000001
     depends_on:
       postgres:
         condition: 'service_healthy'
@@ -63,8 +58,6 @@ services:
     environment:
       <<: *common_env
       MODE: creator # required
-      GEN_ADDR: generator:5001
-      BATCH_SIZE: 10000
     depends_on:
       postgres:
         condition: 'service_healthy'
@@ -83,8 +76,6 @@ services:
     environment:
       <<: *common_env
       MODE: director # required
-      BATCH_SIZE: 10000
-      STREAMS: 8
     depends_on:
       - postgres
       - timescale
