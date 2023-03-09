@@ -5,20 +5,20 @@ import (
 	"wormholes/internal/header"
 	"wormholes/services/director/pipe"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/zerolog/log"
 )
 
-func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, redis *redis.Client) {
+func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, radix radix.Client) {
 	conf := DefaultConfig()
 
 	pipe := pipe.New(conf.BatchSize, conf.Streams, ts).Start().Wait()
-	handler := NewHandler(pipe, pg, redis)
+	handler := NewHandler(pipe, pg, radix)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,

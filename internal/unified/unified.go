@@ -11,18 +11,18 @@ import (
 	"wormholes/services/director/pipe"
 	"wormholes/services/generator"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/zerolog/log"
 )
 
 func Run(
 	postgres *pgxpool.Pool,
 	timescale *pgxpool.Pool,
-	redis *redis.Client,
+	cache radix.Client,
 ) {
 	gConf := generator.DefaultConfig()
 	cConf := creator.DefaultConfig()
@@ -34,8 +34,8 @@ func Run(
 	cStore := store.WithPg(postgres)
 	pipe := pipe.New(dConf.BatchSize, dConf.Streams, timescale).Start().Wait()
 
-	cHandler := creator.NewHandler(cStore, ingest, redis, reserve)
-	dHandler := director.NewHandler(pipe, postgres, redis)
+	cHandler := creator.NewHandler(cStore, ingest, cache, reserve)
+	dHandler := director.NewHandler(pipe, postgres, cache)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,
