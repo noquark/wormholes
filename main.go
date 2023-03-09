@@ -20,7 +20,7 @@ func main() {
 	conf := db.Load()
 	postgres := conf.Postgres.Connect()
 	timescale := conf.Timescale.Connect()
-	redis := conf.Redis.Connect()
+	cache := conf.Redis.Connect()
 
 	db.InitPg(postgres)
 	db.InitTS(timescale)
@@ -29,10 +29,10 @@ func main() {
 	case modes.Generator:
 		generator.Run(postgres)
 	case modes.Creator:
-		creator.Run(postgres, redis)
+		creator.Run(postgres, cache)
 	case modes.Director:
-		director.Run(postgres, timescale, redis)
+		director.Run(postgres, timescale, cache)
 	case modes.Unified:
-		unified.Run(postgres, timescale, redis)
+		unified.Run(postgres, timescale, cache)
 	}
 }

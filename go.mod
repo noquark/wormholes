@@ -7,9 +7,9 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/cheggaaa/pb/v3 v3.1.2
 	github.com/dustin/go-humanize v1.0.1
-	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gofiber/fiber/v2 v2.42.0
 	github.com/jackc/pgx/v4 v4.18.1
+	github.com/mediocregopher/radix/v4 v4.1.2
 	github.com/mssola/user_agent v0.6.0
 	github.com/rs/zerolog v1.29.0
 	github.com/wormholesdev/nanoid v0.0.0-20221121013407-0fce54859363
@@ -21,8 +21,6 @@ require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/bits-and-blooms/bitset v1.5.0 // indirect
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -43,6 +41,7 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
+	github.com/tilinna/clock v1.1.0 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.44.0 // indirect
