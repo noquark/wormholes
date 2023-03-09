@@ -8,9 +8,9 @@ import (
 	"wormholes/internal/links"
 	"wormholes/services/director/pipe"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/zerolog/log"
 )
 
@@ -28,10 +28,10 @@ var linkGet string
 type Handler struct {
 	pipe  *pipe.Pipe
 	db    *pgxpool.Pool
-	cache *redis.Client
+	cache radix.Client
 }
 
-func NewHandler(pipe *pipe.Pipe, db *pgxpool.Pool, cache *redis.Client) *Handler {
+func NewHandler(pipe *pipe.Pipe, db *pgxpool.Pool, cache radix.Client) *Handler {
 	return &Handler{
 		pipe,
 		db,
@@ -47,7 +47,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 
 	var link links.Link
 
-	err := h.cache.HGetAll(context.Background(), shortID).Scan(&link)
+	err := h.cache.Do(context.Background(), radix.Cmd(&link, "HGETALL", shortID))
 	if err != nil || reflect.ValueOf(link).IsZero() {
 		log.Err(err).Msg("redirect: cache miss")
 
@@ -62,7 +62,7 @@ func (h *Handler) Redirect(c *fiber.Ctx) error {
 			return fiber.ErrInternalServerError
 		}
 
-		err = h.cache.HSet(context.Background(), shortID, "id", link.ID, "target", link.Target, "tag", link.Tag).Err()
+		err = h.cache.Do(context.Background(), radix.Cmd(nil, "HSET", shortID, "id", link.ID, "target", link.Target, "tag", link.Tag))
 		if err != nil {
 			log.Warn().Err(err).Msg("redirect: failed to cache")
 		}
