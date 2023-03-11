@@ -26,23 +26,21 @@ const (
 // An ID generation factory made of -
 //   - A db connection for loading IDs on startup
 //   - A bloom-filter based on all existing ids to avoid collisions
-//   - size of ID (default is 7)
+//   - An in-memory store to hold generated Ids
 type Factory struct {
 	protos.UnimplementedBucketServiceServer
-	db    *pgxpool.Pool
-	bloom *Bloom
-	store *MemStore
-	size  int
-	tick  *time.Ticker
+	db     *pgxpool.Pool
+	bloom  *Bloom
+	store  *MemStore
+	config *Config
 }
 
 func NewFactory(config *Config, db *pgxpool.Pool) *Factory {
 	return &Factory{
-		db:    db,
-		bloom: NewBloom(config.BloomMaxLimit, config.BloomErrorRate),
-		store: NewMemStore(config.BucketSize, config.BucketCapacity),
-		size:  config.IDSize,
-		tick:  time.NewTicker(time.Second),
+		db:     db,
+		bloom:  NewBloom(config.BloomMaxLimit, config.BloomErrorRate),
+		store:  NewMemStore(config.BucketSize, config.BucketCapacity),
+		config: config,
 	}
 }
 
@@ -86,19 +84,12 @@ func (f *Factory) Prepare() *Factory {
 }
 
 func (f *Factory) Run() *Factory {
+	for i := range f.store.buckets {
+		go f.populateBucket(i)
+	}
 	go func() {
-		for {
-			select {
-			case <-f.tick.C:
-				if emptyBuckets := f.store.GetEmpty(); len(emptyBuckets) > 0 {
-					for _, idx := range emptyBuckets {
-						f.store.mutex.Lock()
-						go f.populateBucket(idx)
-						f.store.status[idx] = BucketBusy
-						f.store.mutex.Unlock()
-					}
-				}
-			}
+		for idx := range f.store.empty {
+			go f.populateBucket(idx)
 		}
 	}()
 
@@ -106,46 +97,69 @@ func (f *Factory) Run() *Factory {
 }
 
 func (f *Factory) Shutdown() {
-	f.tick.Stop()
+	close(f.store.empty)
 }
 
 // populate bucket at given index until full.
 func (f *Factory) populateBucket(idx int) {
 	t := time.Now()
-
-	log.Info().Msgf("factory: filling bucket %d", idx)
-
 	fillCount := 0
-	for fillCount < f.store.capacity {
-		id, err := nanoid.New(f.size)
-		if err == nil && id != "" {
-			if !f.bloom.Exists(fasterByte(id)) {
-				f.store.buckets[idx][fillCount] = id
-				f.bloom.Add(fasterByte(id))
-				fillCount++
+	bucket := f.store.buckets[idx]
+	idSize := f.config.IDSize
+	if isAvailable := bucket.TryLock(); isAvailable {
+		log.Info().Msgf("filling bucket %d", idx)
+		bucket.data = make([]string, bucket.capacity)
+		for fillCount < bucket.capacity {
+			id, err := nanoid.New(idSize)
+			if err == nil && id != "" {
+				if !f.bloom.Exists(fasterByte(id)) {
+					bucket.data[fillCount] = id
+					f.bloom.Add(fasterByte(id))
+					fillCount++
+				}
 			}
 		}
+		bucket.Unlock()
+		log.Info().Msgf("filled bucket %d in %s", idx, time.Since(t).String())
+	} else {
+		log.Warn().Msgf("bucket not available %d", idx)
 	}
-	f.store.mutex.Lock()
-	f.store.status[idx] = BucketFull
-	f.store.mutex.Unlock()
-	log.Info().Msgf("factory: filled bucket %d in %s", idx, time.Since(t).String())
 }
 
 func (f *Factory) GetBucket(context context.Context, empty *protos.Empty) (*protos.Bucket, error) {
+	t := time.Now()
 	ids := f.store.Pop()
-	if len(ids) == 0 {
+	if ids != nil {
+		log.Info().Msgf("get bucket in %s", time.Since(t).String())
+		p := &protos.Bucket{
+			Ids: ids,
+		}
+		log.Info().Msgf("serialized bucket in %s", time.Since(t).String())
+		return p, nil
+	} else {
+		timer := time.NewTimer(f.config.Timeout)
+		for range timer.C {
+			if ids = f.store.Pop(); ids != nil {
+				return &protos.Bucket{
+					Ids: ids,
+				}, nil
+			}
+		}
+		log.Warn().Caller().Msgf("timed out, none of the buckets are filled")
 		return nil, status.New(codes.ResourceExhausted, "factory: it's empty here").Err()
 	}
-
-	return &protos.Bucket{
-		Ids: ids,
-	}, nil
 }
 
 func (f *Factory) GetLocalBucket() ([]string, error) {
 	ids := f.store.Pop()
-	if len(ids) == 0 {
+	if ids == nil {
+		timer := time.NewTimer(f.config.Timeout)
+		for range timer.C {
+			if ids = f.store.Pop(); ids != nil {
+				return ids, nil
+			}
+		}
+		log.Warn().Caller().Msgf("timed out, none of the buckets are filled")
 		return nil, errors.New("factory: it's empty here")
 	}
 
