@@ -7,72 +7,57 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const (
-	BucketEmpty = iota
-	BucketBusy  = iota
-	BucketFull  = iota
-)
-
-// An in-memory store with multiple buckets and their status.
-type MemStore struct {
-	mutex    sync.RWMutex
-	status   map[int]int
-	buckets  [][]string
+type Bucket struct {
+	sync.RWMutex
 	capacity int
+	data     []string
+}
+
+func (b *Bucket) Pop() []string {
+	data := make([]string, b.capacity)
+	copy(data, b.data)
+	b.data = nil
+	return data
+}
+
+// An in memory store with buckets
+type MemStore struct {
+	buckets []*Bucket
+	empty   chan int
 }
 
 // Create a new memory store for given bucket size and capacity.
 func NewMemStore(size, capacity int) *MemStore {
 	memStore := &MemStore{
-		mutex:    sync.RWMutex{},
-		status:   make(map[int]int, size),
-		buckets:  make([][]string, size),
-		capacity: capacity,
+		buckets: make([]*Bucket, size),
+		empty:   make(chan int, size),
 	}
 	for i := range memStore.buckets {
-		memStore.buckets[i] = make([]string, capacity)
-		memStore.status[i] = BucketEmpty
+		memStore.buckets[i] = &Bucket{capacity: capacity}
 	}
 
-	log.Info().Msgf("memstore: bucket capacity %s", humanize.Comma(int64(capacity)))
-	log.Info().Msgf("memstore: number of buckets %d", size)
+	log.Info().Msgf("bucket capacity %s", humanize.Comma(int64(capacity)))
+	log.Info().Msgf("number of buckets %d", size)
 
 	return memStore
 }
 
-// Get index of all buckets that are empty.
-func (s *MemStore) GetEmpty() []int {
-	var emptyBucketIDs []int
-
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	for id, status := range s.status {
-		if status == BucketEmpty {
-			emptyBucketIDs = append(emptyBucketIDs, id)
-		}
-	}
-
-	return emptyBucketIDs
-}
-
 // Pop first bucket that is full.
 func (s *MemStore) Pop() []string {
-	var data []string
-
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	for id, status := range s.status {
-		if status == BucketFull {
-			data = make([]string, s.capacity)
-			copy(data, s.buckets[id])
-			s.status[id] = BucketEmpty
-			s.buckets[id] = make([]string, s.capacity)
-
-			break
+	for id, bucket := range s.buckets {
+		if isAvailable := bucket.TryLock(); isAvailable {
+			if bucket.data != nil {
+				data := bucket.Pop()
+				bucket.Unlock()
+				s.empty <- id
+				return data
+			} else {
+				bucket.Unlock()
+				continue
+			}
+		} else {
+			log.Warn().Msgf("bucket %d is busy", id)
 		}
 	}
-
-	return data
+	return nil
 }
