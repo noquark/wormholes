@@ -1,15 +1,14 @@
 package creator
 
 import (
-	"context"
 	"reflect"
+	"wormholes/internal/cache"
 	"wormholes/internal/links"
 	"wormholes/services/creator/ingestor"
 	"wormholes/services/creator/reserve"
 	"wormholes/services/creator/store"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,14 +16,14 @@ import (
 type Handler struct {
 	backend  store.Store
 	ingestor *ingestor.Ingestor
-	cache    radix.Client
+	cache    *cache.Cache
 	reserve  reserve.Reserve
 }
 
 func NewHandler(
 	backend store.Store,
 	ingestor *ingestor.Ingestor,
-	cache radix.Client,
+	cache *cache.Cache,
 	reserve reserve.Reserve,
 ) *Handler {
 	return &Handler{
@@ -98,7 +97,7 @@ func (h *Handler) Get(ctx *fiber.Ctx) error {
 
 	var link links.Link
 
-	err := h.cache.Do(context.Background(), radix.Cmd(&link, "HGETALL", shortID))
+	err := h.cache.GetLink(&link, shortID)
 	if err != nil || reflect.ValueOf(link).IsZero() {
 		log.Err(err).Msg("get: cache miss")
 
@@ -111,7 +110,7 @@ func (h *Handler) Get(ctx *fiber.Ctx) error {
 			return fiber.ErrBadRequest
 		}
 
-		err = h.cache.Do(context.Background(), radix.Cmd(nil, "HSET", shortID, "id", link.ID, "target", link.Target, "tag", link.Tag))
+		err = h.cache.SetLink(link, shortID)
 		if err != nil {
 			log.Warn().Err(err).Msg("get: failed to cache")
 		}

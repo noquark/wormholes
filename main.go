@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"wormholes/internal/cache"
 	"wormholes/internal/db"
 	"wormholes/internal/modes"
 	"wormholes/internal/unified"
@@ -20,7 +21,7 @@ func main() {
 	conf := db.Load()
 	postgres := conf.Postgres.Connect()
 	timescale := conf.Timescale.Connect()
-	cache := conf.Redis.Connect()
+	cache := cache.New(conf.REDIS_URI)
 
 	db.InitPg(postgres)
 	db.InitTS(timescale)

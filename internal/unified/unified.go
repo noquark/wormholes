@@ -2,6 +2,7 @@ package unified
 
 import (
 	"fmt"
+	"wormholes/internal/cache"
 	"wormholes/internal/header"
 	"wormholes/services/creator"
 	"wormholes/services/creator/ingestor"
@@ -15,14 +16,13 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/zerolog/log"
 )
 
 func Run(
 	postgres *pgxpool.Pool,
 	timescale *pgxpool.Pool,
-	cache radix.Client,
+	cache *cache.Cache,
 ) {
 	gConf := generator.DefaultConfig()
 	cConf := creator.DefaultConfig()
