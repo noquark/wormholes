@@ -11,7 +11,7 @@
 
 - **Fast**. Create millions of links within minute.
 - **Easy to use**. With unified mode, run everything except databases in a single image.
-- **Scalable**. With distributed mode, run multiple instances of creator, and director.
+- **Scalable**. With distributed mode, run multiple instances of creator, and redirector.
 - **Analytics**. Detailed Events are stored in TimescaleDB. Dashboard is WIP.
 
 ## Getting Started

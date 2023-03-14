@@ -1,4 +1,4 @@
-package director
+package redirector
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 	"wormholes/internal/links"
-	"wormholes/services/director/pipe"
+	"wormholes/services/redirector/pipe"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v4/pgxpool"

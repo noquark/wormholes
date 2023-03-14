@@ -6,8 +6,8 @@ import (
 	"wormholes/internal/modes"
 	"wormholes/internal/unified"
 	"wormholes/services/creator"
-	"wormholes/services/director"
 	"wormholes/services/generator"
+	"wormholes/services/redirector"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -30,8 +30,8 @@ func main() {
 		generator.Run(postgres)
 	case modes.Creator:
 		creator.Run(postgres, cache)
-	case modes.Director:
-		director.Run(postgres, timescale, cache)
+	case modes.Redirector:
+		redirector.Run(postgres, timescale, cache)
 	case modes.Unified:
 		unified.Run(postgres, timescale, cache)
 	}

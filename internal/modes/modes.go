@@ -1,8 +1,8 @@
 package modes
 
 const (
-	Unified   = "unified"
-	Creator   = "creator"
-	Director  = "director"
-	Generator = "generator"
+	Unified    = "unified"
+	Creator    = "creator"
+	Redirector = "redirector"
+	Generator  = "generator"
 )

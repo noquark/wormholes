@@ -1,9 +1,9 @@
-package director
+package redirector
 
 import (
 	"fmt"
 	"wormholes/internal/header"
-	"wormholes/services/director/pipe"
+	"wormholes/services/redirector/pipe"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
@@ -28,7 +28,7 @@ func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, radix radix.Client) {
 	})
 
 	if !fiber.IsChild() {
-		header.Show("Director")
+		header.Show("Redirector")
 
 		log.Info().Msgf("Running on port %d", conf.Port)
 	}
