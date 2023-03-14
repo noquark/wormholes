@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"log"
-	"wormholes/services/director/sql"
+	"wormholes/services/redirector/sql"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"

@@ -7,9 +7,9 @@ import (
 	"wormholes/services/creator/ingestor"
 	"wormholes/services/creator/reserve"
 	"wormholes/services/creator/store"
-	"wormholes/services/director"
-	"wormholes/services/director/pipe"
 	"wormholes/services/generator"
+	"wormholes/services/redirector"
+	"wormholes/services/redirector/pipe"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
@@ -26,7 +26,7 @@ func Run(
 ) {
 	gConf := generator.DefaultConfig()
 	cConf := creator.DefaultConfig()
-	dConf := director.DefaultConfig()
+	dConf := redirector.DefaultConfig()
 
 	factory := generator.NewFactory(gConf, postgres).Prepare().Run()
 	ingest := ingestor.New(postgres, cConf.BatchSize).Start()
@@ -35,7 +35,7 @@ func Run(
 	pipe := pipe.New(dConf.BatchSize, dConf.Streams, timescale).Start().Wait()
 
 	cHandler := creator.NewHandler(cStore, ingest, cache, reserve)
-	dHandler := director.NewHandler(pipe, postgres, cache)
+	dHandler := redirector.NewHandler(pipe, postgres, cache)
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage:   true,

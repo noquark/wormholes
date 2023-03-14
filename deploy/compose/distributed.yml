@@ -67,7 +67,7 @@ services:
         condition: 'service_healthy'
       generator:
         condition: 'service_started'
-  director:
+  redirector:
     image: ghcr.io/wormholesdev/wormholes:latest
     ports:
       - 5000:5000
@@ -75,7 +75,7 @@ services:
       - wh_internal
     environment:
       <<: *common_env
-      MODE: director # required
+      MODE: redirector # required
     depends_on:
       - postgres
       - timescale

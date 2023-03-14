@@ -1,4 +1,4 @@
-package director
+package redirector
 
 import "github.com/wormholesdev/nanoid"
 

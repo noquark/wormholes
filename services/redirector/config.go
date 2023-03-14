@@ -1,4 +1,4 @@
-package director
+package redirector
 
 import (
 	"github.com/caarlos0/env/v6"
