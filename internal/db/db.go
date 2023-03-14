@@ -6,10 +6,10 @@ import (
 )
 
 type Config struct {
-	Mode string `env:"MODE" envDefault:"unified"`
+	Mode      string `env:"MODE" envDefault:"unified"`
+	REDIS_URI string `env:"REDIS_URI" envDefault:"redis://localhost:6379/0"`
 	Postgres
 	Timescale
-	Redis
 }
 
 func Load() *Config {
