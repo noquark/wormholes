@@ -28,6 +28,10 @@ func Run(
 	cConf := creator.DefaultConfig()
 	dConf := redirector.DefaultConfig()
 
+	header.Show("Unified")
+	log.Info().Msgf("Running on port %d", dConf.Port)
+	println()
+
 	factory := generator.NewFactory(gConf, postgres).Prepare().Run()
 	ingest := ingestor.New(postgres, cConf.BatchSize).Start()
 	reserve := reserve.WithLocal(factory)
@@ -52,9 +56,6 @@ func Run(
 
 	app.Use(etag.New())
 	app.Use(recover.New())
-
-	header.Show("Unified")
-	log.Info().Msgf("Running on port %d", dConf.Port)
 
 	if err := app.Listen(fmt.Sprintf(":%d", dConf.Port)); err != nil {
 		log.Error().Err(err).Msg("failed to start server")
