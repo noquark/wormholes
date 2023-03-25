@@ -52,8 +52,8 @@ func (p *Pipe) Wait() *Pipe {
 		for {
 			select {
 			case item := <-p.Task:
-				task := <-p.Queue
-				task <- item
+				sTask := <-p.Queue
+				sTask <- item
 			case <-p.ticker.C:
 				for _, s := range p.Streams {
 					if s.Batch.Len() > 0 {

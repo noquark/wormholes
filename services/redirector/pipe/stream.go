@@ -39,8 +39,8 @@ func (s *Stream) Start() {
 	for {
 		s.Queue <- s.Task
 		select {
-		case event := <-s.Task:
-			s.Add(event)
+		case item := <-s.Task:
+			s.Add(item)
 		case <-s.Quit:
 			close(s.Task)
 
