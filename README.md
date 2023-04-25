@@ -9,10 +9,10 @@
 
 ## Features
 
-- **Fast**. Create millions of links within minute.
-- **Easy to use**. With unified mode, run everything except databases in a single image.
-- **Scalable**. With distributed mode, run multiple instances of creator, and redirector.
-- **Analytics**. Detailed Events are stored in TimescaleDB. Dashboard is WIP.
+- ⚡️ **Lightning Fast** : Create millions of short links in minutes.
+- 🤖 **Unified Mode** : Run everything except databases in a single image for streamlined operations and easy management.
+- 🚀 **Distributed Mode** : Run multiple instances of everything except the generator for scalability and high performance.
+- 📊 **Powerful Analytics** : Gain valuable insights of your audience with detailed event tracking and analytics, stored in TimescaleDB.
 
 ## Getting Started
 
