@@ -2,15 +2,19 @@ name: docker
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - '**/*.go'
+      - 'go.*'
+      - 'Dockerfile'
 
 jobs:
   push:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
