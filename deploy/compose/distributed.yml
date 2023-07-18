@@ -36,7 +36,7 @@ services:
     healthcheck:
       test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
   generator:
-    image: ghcr.io/wormholesdev/wormholes:latest
+    image: ghcr.io/noquark/wormholes:latest
     networks:
       - wh_internal
     environment:
@@ -50,7 +50,7 @@ services:
       redis:
         condition: 'service_healthy'
   creator:
-    image: ghcr.io/wormholesdev/wormholes:latest
+    image: ghcr.io/noquark/wormholes:latest
     ports:
       - 5002:5002
     networks:
@@ -68,7 +68,7 @@ services:
       generator:
         condition: 'service_started'
   redirector:
-    image: ghcr.io/wormholesdev/wormholes:latest
+    image: ghcr.io/noquark/wormholes:latest
     ports:
       - 5000:5000
     networks:

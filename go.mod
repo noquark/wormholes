@@ -11,8 +11,8 @@ require (
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mediocregopher/radix/v4 v4.1.3
 	github.com/mssola/user_agent v0.6.0
+	github.com/noquark/nanoid v0.0.0-20230718020649-488c3ab1b3e1
 	github.com/rs/zerolog v1.29.1
-	github.com/wormholesdev/nanoid v0.0.0-20221121013407-0fce54859363
 	google.golang.org/grpc v1.56.2
 	google.golang.org/protobuf v1.31.0
 )
@@ -50,6 +50,5 @@ require (
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
-	google.golang.org/genproto v0.0.0-20230629202037-9506855d4529 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230706204954-ccb25ca9f130 // indirect
 )

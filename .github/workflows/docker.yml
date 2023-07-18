@@ -38,5 +38,5 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: ghcr.io/wormholesdev/wormholes:latest
+          tags: ghcr.io/noquark/wormholes:latest
           provenance: false

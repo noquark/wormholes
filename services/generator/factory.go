@@ -11,8 +11,8 @@ import (
 	"github.com/cheggaaa/pb/v3"
 	"github.com/dustin/go-humanize"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/noquark/nanoid"
 	"github.com/rs/zerolog/log"
-	"github.com/wormholesdev/nanoid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

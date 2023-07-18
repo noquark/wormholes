@@ -1,6 +1,6 @@
 package redirector
 
-import "github.com/wormholesdev/nanoid"
+import "github.com/noquark/nanoid"
 
 const (
 	MaxTry     = 10
