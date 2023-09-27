@@ -9,33 +9,29 @@
 
 ## Features
 
-- ⚡️ **Lightning Fast** : Create millions of short links in minutes.
-- 🤖 **Unified Mode** : Run everything except databases in a single image for streamlined operations and easy management.
-- 🚀 **Distributed Mode** : Run multiple instances of everything except the generator for scalability and high performance.
-- 📊 **Powerful Analytics** : Gain valuable insights of your audience with detailed event tracking and analytics, stored in TimescaleDB.
+- **Lightning Fast** : Create millions of short links in minutes
+- **Unified Mode** : Run everything except databases in a single image
+- **Distributed Mode** : Run multiple creators and redirectors for scale
+- **Powerful Analytics** : Detailed event tracking and analytics
 
 ## Getting Started
 
 ### Preparing
 
-Default database configs are inside `deploy/conf`. Verify those. Included postgres config is tuned for my system for 5000 connections. Generate your own with [pgtune](https://pgtune.leopard.in.ua/#/). You may also want to mount volumes for database which you can do inside default compose files.
+To get started with Wormholes, follow these steps:
+
+- Verify the default database configurations located in `deploy/conf`. Make any necessary adjustments.
+- Consider generating your custom Postgres configuration with [pgtune](https://pgtune.leopard.in.ua/#/).
+- If needed, configure volumes for the database, which can be done within the default compose files.
 
 ### Running in Unified Mode
 
-Run wormholes with docker-compose
+To run Wormholes in Unified Mode using Docker Compose:
 
 ```sh
 cd deploy
 docker compose -f compose/unified.yml up -d
 ```
-
-Following are the API endpoints in unified mode.
-
-1. **PUT** `:5000/v1/links`
-2. **POST** `:5000/v1/links/:id`
-3. **GET** `:5000/v1/links/:id`
-4. **DELETE** `:5000/v1/links/:id`
-5. **GET** `:5000/l/:id`
 
 ### Running in Distributed Mode
 
@@ -46,7 +42,17 @@ cd deploy
 docker compose -f compose/distributed.yml up -d
 ```
 
-Following are the API endpoints in distributed mode.
+## API Endpoints
+
+### Unified Mode
+
+1. **PUT** `:5000/v1/links`
+2. **POST** `:5000/v1/links/:id`
+3. **GET** `:5000/v1/links/:id`
+4. **DELETE** `:5000/v1/links/:id`
+5. **GET** `:5000/l/:id`
+
+### Distributed Mode
 
 1. **PUT** `:5002`
 2. **POST** `:5002/:id`
@@ -54,7 +60,7 @@ Following are the API endpoints in distributed mode.
 4. **DELETE** `:5002/:id`
 5. **GET** `:5000/:id`
 
-## Additional Help
+## Detailed Docs
 
 For detailed documentation visit [Docs](https://noquark.com/docs/wormholes)
 
