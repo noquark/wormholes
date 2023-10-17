@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,7 +22,7 @@ func (db *Timescale) Connect() *pgxpool.Pool {
 		log.Fatal().Err(err).Msg("timescale: failed to connect")
 	}
 
-	dbpool, err := pgxpool.ConnectConfig(
+	dbpool, err := pgxpool.NewWithConfig(
 		context.Background(), config,
 	)
 	if err != nil {

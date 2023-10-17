@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,7 +25,7 @@ func (db *Postgres) Connect() *pgxpool.Pool {
 
 	config.MaxConns = db.MaxConns
 
-	dbpool, err := pgxpool.ConnectConfig(
+	dbpool, err := pgxpool.NewWithConfig(
 		context.Background(), config,
 	)
 	if err != nil {

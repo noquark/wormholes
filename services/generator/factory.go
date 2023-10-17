@@ -10,7 +10,7 @@ import (
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/dustin/go-humanize"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/noquark/nanoid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
