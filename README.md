@@ -16,30 +16,14 @@
 
 ## Getting Started
 
-### Preparing
+> [!NOTE]
+> The provided `docker-compose.yml` will run Wormholes in distributed mode.
+> By default, it uses timescale for storing both events and links, but you can always choose to use postgres for storing links and timescale for events. See [config](https://noquark.com/docs/wormholes/configuration#customizing-database-connections)
 
-To get started with Wormholes, follow these steps:
-
-- Verify the default database configurations located in `deploy/conf`. Make any necessary adjustments.
-- Consider generating your custom Postgres configuration with [pgtune](https://pgtune.leopard.in.ua/#/).
-- If needed, configure volumes for the database, which can be done within the default compose files.
-
-### Running in Unified Mode
-
-To run Wormholes in Unified Mode using Docker Compose:
+You can run wormholes from provided `docker-compose.yml`
 
 ```sh
-cd deploy
-docker compose -f compose/unified.yml up -d
-```
-
-### Running in Distributed Mode
-
-Run wormholes with docker-compose
-
-```sh
-cd deploy
-docker compose -f compose/distributed.yml up -d
+docker compose up -d
 ```
 
 ## API Endpoints
