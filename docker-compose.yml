@@ -2,25 +2,16 @@ version: '3.9'
 
 x-environment: &common_env
   TS_URI: postgres://postgres:postgres@timescale:5432/postgres
-  PG_URI: postgres://postgres:postgres@postgres:5432/postgres
-  REDIS_URI: redis://:redis@redis:6379/0
+  PG_URI: postgres://postgres:postgres@timescale:5432/postgres
+  REDIS_URI: redis://redis:6379/0
+  GEN_ADDR: generator:5001
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_PASSWORD=postgres
-    networks:
-      - wh_internal
-    configs:
-      - source: postgres
-        target: /etc/postgresql/postgresql.conf
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready', '-d', 'postgres']
   timescale:
     image: timescale/timescaledb:latest-pg15
     environment:
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_PASSWORD: postgres
+      TIMESCALEDB_TELEMETRY: off
     networks:
       - wh_internal
     healthcheck:
@@ -29,10 +20,7 @@ services:
     image: redis:7-alpine
     networks:
       - wh_internal
-    configs:
-      - source: redis
-        target: /usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: redis-server --maxmemory-policy allkeys-lru --maxmemory 1gb
     healthcheck:
       test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
   generator:
@@ -43,8 +31,6 @@ services:
       <<: *common_env
       MODE: generator # required
     depends_on:
-      postgres:
-        condition: 'service_healthy'
       timescale:
         condition: 'service_healthy'
       redis:
@@ -59,12 +45,6 @@ services:
       <<: *common_env
       MODE: creator # required
     depends_on:
-      postgres:
-        condition: 'service_healthy'
-      timescale:
-        condition: 'service_healthy'
-      redis:
-        condition: 'service_healthy'
       generator:
         condition: 'service_started'
   redirector:
@@ -77,16 +57,11 @@ services:
       <<: *common_env
       MODE: redirector # required
     depends_on:
-      - postgres
-      - timescale
-      - redis
-      - generator
+      timescale:
+        condition: 'service_healthy'
+      redis:
+        condition: 'service_healthy'
 
-configs:
-  postgres:
-    file: $PWD/conf/postgres.conf
-  redis:
-    file: $PWD/conf/redis.conf
 networks:
   wh_internal:
     external: false
