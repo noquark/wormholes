@@ -1,12 +1,12 @@
-package generator
+package main
 
 import (
 	"context"
 	"errors"
+	"protos"
 	"reflect"
 	"time"
 	"unsafe"
-	"wormholes/protos"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/dustin/go-humanize"

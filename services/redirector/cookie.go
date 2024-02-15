@@ -1,4 +1,4 @@
-package redirector
+package main
 
 import "github.com/noquark/nanoid"
 

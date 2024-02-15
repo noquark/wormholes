@@ -1,13 +1,13 @@
-package redirector
+package main
 
 import (
 	"context"
 	_ "embed"
+	"lib/cache"
+	"lib/links"
+	"redirector/pipe"
 	"reflect"
 	"time"
-	"wormholes/internal/cache"
-	"wormholes/internal/links"
-	"wormholes/services/redirector/pipe"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"

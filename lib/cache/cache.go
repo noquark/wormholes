@@ -2,7 +2,7 @@ package cache
 
 import (
 	"context"
-	"wormholes/internal/links"
+	"lib/links"
 
 	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/zerolog/log"

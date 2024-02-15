@@ -2,11 +2,11 @@ package store
 
 import (
 	"context"
+	"creator/sql"
 	_ "embed"
 	"fmt"
+	"lib/links"
 	"log"
-	"wormholes/internal/links"
-	"wormholes/services/creator/sql"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

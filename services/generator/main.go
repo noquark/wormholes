@@ -1,17 +1,25 @@
-package generator
+package main
 
 import (
 	"fmt"
+	"lib/db"
+	"lib/header"
 	"net"
-	"wormholes/internal/header"
-	"wormholes/protos"
+	"os"
+	"protos"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 )
 
-func Run(pg *pgxpool.Pool) {
+func main() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	dbconf := db.Load()
+	postgres := dbconf.Postgres.Connect()
+
 	header.Show("Generator")
 
 	conf := DefaultConfig()
@@ -21,7 +29,7 @@ func Run(pg *pgxpool.Pool) {
 		log.Fatal().Err(err).Msg("failed to start generator")
 	}
 
-	f := NewFactory(conf, pg).Prepare().Run()
+	f := NewFactory(conf, postgres).Prepare().Run()
 	grpcServer := grpc.NewServer()
 	protos.RegisterBucketServiceServer(grpcServer, f)
 
