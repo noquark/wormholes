@@ -10,31 +10,21 @@
 ## Features
 
 - **Lightning Fast** : Create millions of short links in minutes
-- **Unified Mode** : Run everything except databases in a single image
-- **Distributed Mode** : Run multiple creators and redirectors for scale
+- **Distributed Mode** : Run multiple creator and redirector instances for scale
 - **Powerful Analytics** : Detailed event tracking and analytics
 
 ## Getting Started
 
 > [!NOTE]
-> The provided `docker-compose.yml` will run Wormholes in distributed mode.
-> By default, it uses timescale for storing both events and links, but you can always choose to use postgres for storing links and timescale for events. See [config](https://noquark.com/docs/wormholes/configuration#customizing-database-connections)
+> The provided docker compose uses timescale for storing both events and links, but you can always choose to use postgres for storing links and timescale for events. See [config](https://noquark.com/docs/wormholes/configuration#customizing-database-connections)
 
-You can run wormholes from provided `docker-compose.yml`
+You can run wormholes from provided `docker-compose.yml` under `./deploy` directory.
 
 ```sh
 docker compose up -d
 ```
 
 ## API Endpoints
-
-### Unified Mode
-
-1. **PUT** `:5000/v1/links`
-2. **POST** `:5000/v1/links/:id`
-3. **GET** `:5000/v1/links/:id`
-4. **DELETE** `:5000/v1/links/:id`
-5. **GET** `:5000/l/:id`
 
 ### Distributed Mode
 
