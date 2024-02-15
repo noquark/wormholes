@@ -1,25 +1,25 @@
 version: '3.9'
-
+name: wormholes
 services:
   timescale:
     image: timescale/timescaledb:latest-pg15
     env_file:
       - .env
     networks:
-      - wh_internal
+      - internal
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready', '-d', 'postgres']
   redis:
     image: redis:7-alpine
     networks:
-      - wh_internal
+      - internal
     command: redis-server --maxmemory-policy allkeys-lru --maxmemory 1gb
     healthcheck:
       test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
   generator:
     image: ghcr.io/noquark/generator:latest
     networks:
-      - wh_internal
+      - internal
     env_file:
       - .env
     depends_on:
@@ -32,7 +32,7 @@ services:
     ports:
       - 5002:5002
     networks:
-      - wh_internal
+      - internal
     env_file:
       - .env
     depends_on:
@@ -43,7 +43,7 @@ services:
     ports:
       - 5000:5000
     networks:
-      - wh_internal
+      - internal
     env_file:
       - .env
     depends_on:
@@ -53,6 +53,5 @@ services:
         condition: 'service_healthy'
 
 networks:
-  wh_internal:
+  internal:
     external: false
-    name: wh-internal
