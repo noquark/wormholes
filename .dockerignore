@@ -1,4 +1,5 @@
 .github
+.deploy
 .gitignore
 LICENSE
 README.md

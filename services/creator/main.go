@@ -1,24 +1,34 @@
-package creator
+package main
 
 import (
+	"creator/ingestor"
+	"creator/reserve"
+	"creator/store"
 	"fmt"
-	"wormholes/internal/cache"
-	"wormholes/internal/header"
-	"wormholes/services/creator/ingestor"
-	"wormholes/services/creator/reserve"
-	"wormholes/services/creator/store"
+	"lib/cache"
+	"lib/db"
+	"lib/header"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
-func Run(pg *pgxpool.Pool, cache *cache.Cache) {
+func main() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	dbconf := db.Load()
+
+	postgres := dbconf.Postgres.Connect()
+	cache := cache.New(dbconf.REDIS_URI)
+
 	conf := DefaultConfig()
-	db := store.WithPg(pg)
-	pipe := ingestor.New(pg, conf.BatchSize).Start()
+	db := store.WithPg(postgres)
+	pipe := ingestor.New(postgres, conf.BatchSize).Start()
 	reserve := reserve.WithGrpc(conf.GenAddr)
 	handler := NewHandler(db, pipe, cache, reserve)
 

@@ -2,10 +2,10 @@ package ingestor
 
 import (
 	"context"
+	"creator/sql"
+	"lib/links"
 	"log"
 	"time"
-	"wormholes/internal/links"
-	"wormholes/services/creator/sql"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

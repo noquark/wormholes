@@ -1,12 +1,12 @@
-package creator
+package main
 
 import (
+	"creator/ingestor"
+	"creator/reserve"
+	"creator/store"
+	"lib/cache"
+	"lib/links"
 	"reflect"
-	"wormholes/internal/cache"
-	"wormholes/internal/links"
-	"wormholes/services/creator/ingestor"
-	"wormholes/services/creator/reserve"
-	"wormholes/services/creator/store"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -17,14 +17,14 @@ type Handler struct {
 	backend  store.Store
 	ingestor *ingestor.Ingestor
 	cache    *cache.Cache
-	reserve  reserve.Reserve
+	reserve  *reserve.Reserve
 }
 
 func NewHandler(
 	backend store.Store,
 	ingestor *ingestor.Ingestor,
 	cache *cache.Cache,
-	reserve reserve.Reserve,
+	reserve *reserve.Reserve,
 ) *Handler {
 	return &Handler{
 		backend,

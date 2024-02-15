@@ -1,17 +1,10 @@
 version: '3.9'
 
-x-environment: &common_env
-  TS_URI: postgres://postgres:postgres@timescale:5432/postgres
-  PG_URI: postgres://postgres:postgres@timescale:5432/postgres
-  REDIS_URI: redis://redis:6379/0
-  GEN_ADDR: generator:5001
-
 services:
   timescale:
     image: timescale/timescaledb:latest-pg15
-    environment:
-      POSTGRES_PASSWORD: postgres
-      TIMESCALEDB_TELEMETRY: off
+    env_file:
+      - .env
     networks:
       - wh_internal
     healthcheck:
@@ -24,38 +17,35 @@ services:
     healthcheck:
       test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
   generator:
-    image: ghcr.io/noquark/wormholes:latest
+    image: ghcr.io/noquark/generator:latest
     networks:
       - wh_internal
-    environment:
-      <<: *common_env
-      MODE: generator # required
+    env_file:
+      - .env
     depends_on:
       timescale:
         condition: 'service_healthy'
       redis:
         condition: 'service_healthy'
   creator:
-    image: ghcr.io/noquark/wormholes:latest
+    image: ghcr.io/noquark/creator:latest
     ports:
       - 5002:5002
     networks:
       - wh_internal
-    environment:
-      <<: *common_env
-      MODE: creator # required
+    env_file:
+      - .env
     depends_on:
       generator:
         condition: 'service_started'
   redirector:
-    image: ghcr.io/noquark/wormholes:latest
+    image: ghcr.io/noquark/redirector:latest
     ports:
       - 5000:5000
     networks:
       - wh_internal
-    environment:
-      <<: *common_env
-      MODE: redirector # required
+    env_file:
+      - .env
     depends_on:
       timescale:
         condition: 'service_healthy'
