@@ -1,17 +1,13 @@
 <h1 align="center">wormholes</h1>
 <p align='center'>
   <img alt="GitHub" src="https://img.shields.io/github/actions/workflow/status/noquark/wormholes/docker.yml?logo=github&style=flat-square" />
-  <img alt="Go Report Card" src="https://img.shields.io/badge/go%20report-A-green.svg?style=flat-square&logo=go&logoColor=white" />
   <img alt="GitHub" src="https://img.shields.io/github/license/noquark/wormholes?logo=gnu&style=flat-square" />
-  <img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/noquark/wormholes?logo=go&logoColor=white&style=flat-square" />
+</p>
+<p align="center">
+  <b>Lighting Fast and Distributed Link Shortener</b><br />
+  <sub>With powerful event tracking and analytics</sub>
 </p>
 <br />
-
-## Features
-
-- **Lightning Fast** : Create millions of short links in minutes
-- **Distributed Mode** : Run multiple creator and redirector instances for scale
-- **Powerful Analytics** : Detailed event tracking and analytics
 
 ## Getting Started
 
