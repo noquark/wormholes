@@ -11,7 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -53,8 +52,4 @@ func main() {
 	if err != nil {
 		log.Error().Err(err).Msg("error starting server")
 	}
-}
-
-func Run(pg *pgxpool.Pool, ts *pgxpool.Pool, cache *cache.Cache) {
-
 }
