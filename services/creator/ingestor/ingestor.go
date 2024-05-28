@@ -2,7 +2,6 @@ package ingestor
 
 import (
 	"context"
-	"creator/sql"
 	"lib/links"
 	"log"
 	"time"
@@ -13,6 +12,11 @@ import (
 
 const (
 	TickerInterval = time.Second * 10
+)
+
+// SQL Queries
+const (
+	Insert = "insert into links (id, tag, target) values ($1, $2, $3);"
 )
 
 // A simple link ingestor.
@@ -65,7 +69,7 @@ func (i *Ingestor) Push(link *links.Link) {
 
 func (i *Ingestor) add(link *links.Link) {
 	i.batch.Queue(
-		sql.Insert,
+		Insert,
 		link.ID, link.Tag, link.Target)
 
 	if i.batch.Len() > i.batchSize {

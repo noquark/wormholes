@@ -2,13 +2,19 @@ package store
 
 import (
 	"context"
-	"creator/sql"
 	_ "embed"
 	"fmt"
 	"lib/links"
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+// SQL Queries
+const (
+	Get    = "select id, target, tag from links where id = $1"
+	Update = "update links set target = $1, tag = $2 where id = $3"
+	Delete = "delete from links where id = $1"
 )
 
 // postgres implementation of link db store.
@@ -26,7 +32,7 @@ func (p *PgStore) Get(id string) (links.Link, error) {
 	var link links.Link
 
 	err := p.db.QueryRow(context.Background(),
-		sql.Get,
+		Get,
 		id,
 	).Scan(&link.ID, &link.Target, &link.Tag)
 	if err != nil {
@@ -38,7 +44,7 @@ func (p *PgStore) Get(id string) (links.Link, error) {
 
 func (p *PgStore) Update(link *links.Link) error {
 	_, err := p.db.Exec(context.Background(),
-		sql.Update,
+		Update,
 		link.Target, link.Tag, link.ID,
 	)
 	if err != nil {
@@ -52,7 +58,7 @@ func (p *PgStore) Update(link *links.Link) error {
 
 func (p *PgStore) Delete(id string) error {
 	_, err := p.db.Exec(context.Background(),
-		sql.Delete,
+		Delete,
 		id,
 	)
 	if err != nil {
