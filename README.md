@@ -18,9 +18,7 @@ cd deploy
 docker compose up -d
 ```
 
-## API Endpoints
-
-### Distributed Mode
+### API Endpoints
 
 1. **PUT** `:5002`
 2. **POST** `:5002/:id`
