@@ -13,3 +13,6 @@
 
 # Go Workspace files
 go.work.sum
+
+# Generated Binary
+wormholes

@@ -1,0 +1,40 @@
+name: wormholes
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - internal
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready', '-d', 'postgres']
+
+  redis:
+    container_name: redis
+    image: redis:7
+    networks:
+      - internal
+    command: redis-server --maxmemory-policy allkeys-lru --maxmemory 1gb
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+
+  wormholes:
+    container_name: wormholes
+    image: ghcr.io/noquark/wormholes:latest
+    networks:
+      - internal
+    environment:
+      PG_URI: postgres://postgres:postgres@postgres:5432/postgres
+      REDIS_URI: redis://redis:6379/0
+    ports:
+      - 5000:5000
+    depends_on:
+      postgres:
+        condition: 'service_healthy'
+      redis:
+        condition: 'service_healthy'
+
+networks:
+  internal:
+    external: false

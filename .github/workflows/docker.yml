@@ -32,34 +32,11 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build and push
-        id: build-creator
+        id: build
         uses: docker/build-push-action@v4
         with:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          target: creator
-          tags: ghcr.io/noquark/creator:latest
-          provenance: false
-
-      - name: Build and push
-        id: build-redirector
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          target: redirector
-          tags: ghcr.io/noquark/redirector:latest
-          provenance: false
-
-      - name: Build and push
-        id: build-generator
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          target: generator
-          tags: ghcr.io/noquark/generator:latest
-          provenance: false
+          tags: ghcr.io/noquark/wormholes:latest
+          provenance: true
